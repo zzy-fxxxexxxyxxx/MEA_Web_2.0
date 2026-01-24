@@ -8,22 +8,24 @@ import {
   detectPeaks,
 } from "./DataProcess.js";
 import { drawGridOnPanel1, plotWaveformsOnGrid } from "./Panel1_def.js";
-import { originalPeakEnlargement } from "./Panel3_def.js";
 import {
   drawGridOnPanel2,
   heatCalculate,
   drawSmoothHeatmapTransparentCorners,
   drawArrow,
 } from "./Panel2_def.js";
+import { originalPeakEnlargement } from "./Panel3_def.js";
 import { plotAllSignals } from "./Panel4_def.js";
 import { saveCanvasWithTimestamp, saveSVGWithFormat } from "./Save.js";
-
 import { showToastById } from "./Beautify.js";
 
 //------------------------------------DOMContentLoaded----------------------------------------------------------------
 
 // 等页面加载完成再执行下面的逻辑
 document.addEventListener("DOMContentLoaded", async () => {
+  const currentDeviceId = document.body.dataset.deviceId;
+  const currentDeviceName = document.body.dataset.deviceName; // 建议把名字也一并读了
+
   // 获取所有按钮和内容
   const tabButtons = document.querySelectorAll(".tablinks");
   const tabContents = document.querySelectorAll(".tabcontent");
@@ -48,13 +50,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           "border-2",
           "border-primary",
           "text-primary",
-          "font-bold"
+          "font-bold",
         );
         el.classList.add(
           "bg-white",
           "border",
           "border-gray-200",
-          "text-gray-500"
+          "text-gray-500",
         );
       });
 
@@ -63,14 +65,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         "bg-white",
         "border",
         "border-gray-200",
-        "text-gray-500"
+        "text-gray-500",
       );
       this.classList.add(
         "bg-primary/10",
         "border-2",
         "border-primary",
         "text-primary",
-        "font-bold"
+        "font-bold",
       );
     });
   });
@@ -293,7 +295,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     HeatMapData = await heatCalculate(
       processedData.peakArriveTime[t0 - 1], //减去1来对其索引
       processedData.fs,
-      processedData.layout
+      processedData.layout,
     );
     drawGridOnPanel2();
     drawSmoothHeatmapTransparentCorners(HeatMapData, "color1");
@@ -308,7 +310,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     HeatMapData = await heatCalculate(
       processedData.peakArriveTime[t0 - 1], //减去1来对其索引
       processedData.fs,
-      processedData.layout
+      processedData.layout,
     );
     drawGridOnPanel2();
     drawSmoothHeatmapTransparentCorners(HeatMapData, "color1");
@@ -499,106 +501,113 @@ document.addEventListener("DOMContentLoaded", async () => {
     canvas2.dataset.hasContent = "false";
   });
 
- /* ============================================================
+  /* ============================================================
    新增：实时监测模式逻辑 (Real-time Monitor Mode)
    ============================================================ */
 
-// 1. 【修改点】从 body 标签的 data- 属性读取配置
-// data-device-name 自动对应 dataset.deviceName
-const currentDeviceName = document.body.dataset.deviceName;
+  // // 1. 【修改点】从 body 标签的 data- 属性读取配置
+  // // data-device-name 自动对应 dataset.deviceName
+  // const currentDeviceName = document.body.dataset.deviceName;
 
-// 2. 判断是否处于“实时设备连接”状态 (如果有名字，说明是在线模式)
-if (currentDeviceName) {
+  // 2. 判断是否处于“实时设备连接”状态 (如果有名字，说明是在线模式)
+  if (currentDeviceName) {
+    console.log(`🚀 [实时模式] 已启动，正在连接设备: ${currentDeviceName}`);
 
-  console.log(`🚀 [实时模式] 已启动，正在连接设备: ${currentDeviceName}`);
+    // 提示用户
+    showToastById("toast1", `正在连接: ${currentDeviceName}...`, 3000);
 
-  // 提示用户
-  showToastById("toast1", `正在连接: ${currentDeviceName}...`, 3000);
+    // 3. 初始化 Socket.io
+    const socket = io();
 
-  // 3. 初始化 Socket.io
-  const socket = io();
+    // 定义一个图表变量
+    let realtimeChart = null;
 
-  // 定义一个图表变量
-  let realtimeChart = null;
+    // --- 连接成功 ---
+    socket.on("connect", () => {
+      console.log("✅ WebSocket 连接成功！");
+      showToastById("toast3", "设备已连接，接收数据中...", 2000);
 
-  // --- 连接成功 ---
-  socket.on("connect", () => {
-    console.log("✅ WebSocket 连接成功！");
-    showToastById("toast3", "设备已连接，接收数据中...", 2000);
+      // ▼▼▼▼▼▼ 修正点在这里 ▼▼▼▼▼▼
+      // 不要用 meaConfig.currentDeviceId 了，直接用你在文件顶部定义的那个变量
+      if (currentDeviceId) {
+        socket.emit("join_monitor", { device_id: currentDeviceId });
+      }
+      // ▲▲▲▲▲▲ 修正结束 ▲▲▲▲▲▲
 
-    // 连接成功后，初始化图表
-    initRealtimeChart();
-  });
+      // 连接成功后，初始化图表
+      initRealtimeChart();
+    });
 
-  // --- 接收数据 ---
-  socket.on("update_signal", (msg) => {
-    if (realtimeChart) {
-      updateChartData(realtimeChart, msg.time, msg.value);
-    }
-  });
-
-  // --- 辅助函数：初始化实时图表 ---
-  function initRealtimeChart() {
-    // 【修改点】你之前改成了 panel1Canvas，这里保持一致
-    const ctx = document.getElementById("panel1Canvas");
-
-    if (!ctx) {
-      console.error("找不到 ID 为 panel1Canvas 的 Canvas，无法绘图");
-      return;
-    }
-
-    realtimeChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          // 【修改点】这里也换成了新变量
-          label: `实时信号 (${currentDeviceName})`,
-          data: [],
-          borderColor: '#165DFF',
-          borderWidth: 2,
-          pointRadius: 0,
-          tension: 0.4,
-          fill: false
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: false,
-        interaction: {
-          intersect: false
-        },
-        scales: {
-          x: {
-            display: false,
-            title: { display: true, text: 'Time' }
-          },
-          y: {
-            beginAtZero: false,
-            title: { display: true, text: 'Voltage (μV)' }
-          }
-        }
+    // --- 接收数据 ---
+    socket.on("update_signal", (msg) => {
+      if (realtimeChart) {
+        updateChartData(realtimeChart, msg.time, msg.value);
       }
     });
-  }
 
-  // --- 辅助函数：更新数据 ---
-  function updateChartData(chart, time, value) {
-    const labels = chart.data.labels;
-    const data = chart.data.datasets[0].data;
+    // --- 辅助函数：初始化实时图表 ---
+    function initRealtimeChart() {
+      // 【修改点】你之前改成了 panel1Canvas，这里保持一致
+      const ctx = document.getElementById("panel1Canvas");
 
-    labels.push(time);
-    data.push(value);
+      if (!ctx) {
+        console.error("找不到 ID 为 panel1Canvas 的 Canvas，无法绘图");
+        return;
+      }
 
-    // 保持最近 100 个点
-    if (labels.length > 100) {
-      labels.shift();
-      data.shift();
+      realtimeChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              // 【修改点】这里也换成了新变量
+              label: `实时信号 (${currentDeviceName})`,
+              data: [],
+              borderColor: "#165DFF",
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.4,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          interaction: {
+            intersect: false,
+          },
+          scales: {
+            x: {
+              display: false,
+              title: { display: true, text: "Time" },
+            },
+            y: {
+              beginAtZero: false,
+              title: { display: true, text: "Voltage (μV)" },
+            },
+          },
+        },
+      });
     }
 
-    chart.update('none');
-  }
-}
+    // --- 辅助函数：更新数据 ---
+    function updateChartData(chart, time, value) {
+      const labels = chart.data.labels;
+      const data = chart.data.datasets[0].data;
 
+      labels.push(time);
+      data.push(value);
+
+      // 保持最近 100 个点
+      if (labels.length > 100) {
+        labels.shift();
+        data.shift();
+      }
+
+      chart.update("none");
+    }
+  }
 });
