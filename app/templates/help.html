@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="zh" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MEA Web 2.0 用户手册</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* 仅保留滚动条样式 */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f3f4f6;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d1d5db;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+      }
+
+      /* 侧边栏 */
+      .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+      }
+      /* 修改后：用标准 CSS (VS Code 不会报错) */
+      .nav-item:hover {
+        background-color: #eff6ff; /* 对应 bg-blue-50 */
+        color: #2563eb; /* 对应 text-blue-600 */
+        transition:
+          color 0.15s,
+          background-color 0.15s;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-white h-screen flex flex-col font-sans overflow-hidden text-gray-600"
+  >
+    <!-- 顶部导航 -->
+    <header
+      class="bg-white border-b border-gray-200 shadow-sm z-20 flex-shrink-0 h-16"
+    >
+      <div
+        class="container mx-auto px-6 h-full flex justify-between items-center"
+      >
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white"
+          >
+            <i class="fa fa-book"></i>
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-gray-900 leading-tight">
+              MEA Web 2.0
+            </h1>
+            <p class="text-xs text-gray-500">用户操作手册</p>
+          </div>
+        </div>
+        <a
+          href="/"
+          class="flex items-center text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors bg-gray-100 hover:bg-blue-50 px-4 py-2 rounded-full border border-transparent hover:border-blue-200"
+        >
+          <i class="fa fa-reply mr-2"></i> 返回控制台
+        </a>
+      </div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden bg-white">
+      <!-- 左侧目录树 -->
+      <aside
+        class="w-72 bg-gray-50 border-r border-gray-200 flex-shrink-0 overflow-y-auto custom-scrollbar"
+      >
+        <nav class="py-8 px-4 space-y-8">
+          <div>
+            <h5
+              class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2"
+            >
+              1. 软件概览
+            </h5>
+            <a
+              href="#intro-purpose"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >1.1 开发目的</a
+            >
+            <a
+              href="#intro-tech"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >1.2 技术特点</a
+            >
+          </div>
+          <div>
+            <h5
+              class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2"
+            >
+              2. 功能模块介绍
+            </h5>
+            <a
+              href="#mod-input"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >2.1 输入模块</a
+            >
+            <a
+              href="#mod-raw"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >2.2 原始信号观察模块</a
+            >
+            <a
+              href="#mod-discharge"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >2.3 放电行为分析模块</a
+            >
+            <a
+              href="#mod-process"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >2.4 信号处理模块</a
+            >
+            <a
+              href="#mod-output"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >2.5 输出模块</a
+            >
+          </div>
+          <div>
+            <h5
+              class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2"
+            >
+              3. 详细操作说明
+            </h5>
+            <a
+              href="#step-init"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >Step 1：初始界面</a
+            >
+            <a
+              href="#step-input"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >Step 2：输入文件</a
+            >
+            <a
+              href="#step-raw"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >Step 3：绘制原始信号</a
+            >
+            <a
+              href="#step-heat"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >Step 4：热力图分析</a
+            >
+            <a
+              href="#step-filter"
+              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              >Step 5：信号处理</a
+            >
+          </div>
+          <div>
+            <h5
+              class="text-xs font-bold text-blue-500 uppercase tracking-wider mb-3 px-2"
+            >
+              4. 实时监测 (Web版)
+            </h5>
+            <a
+              href="#realtime"
+              class="nav-item block px-3 py-2 text-sm font-bold text-blue-600 bg-blue-50 rounded-md border border-blue-100"
+              >在线设备监控</a
+            >
+          </div>
+        </nav>
+      </aside>
+
+      <!-- 右侧内容区 -->
+      <main class="flex-1 overflow-y-auto p-10 lg:p-16 scroll-smooth bg-white">
+        <div class="max-w-4xl mx-auto pb-20">
+          <!-- 1. 软件概览 -->
+          <section id="intro">
+            <!-- H1 大标题：非常大(text-4xl)，非常黑，下划线 -->
+            <h1
+              class="text-4xl font-extrabold text-gray-900 mb-8 border-b-2 border-gray-100 pb-4 mt-8"
+            >
+              1. 软件概览
+            </h1>
+
+            <div id="intro-purpose" class="mb-12">
+              <!-- H3 小标题：较大(text-2xl)，左边有蓝色竖条 -->
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                1.1 开发目的
+              </h3>
+              <!-- 正文：标准大小(text-[18px])，行距宽松 -->
+              <p class="text-[18px] leading-7 mb-4 text-justify">
+                本软件旨在可视化心肌细胞信号，深度解析心肌细胞放电信号所携带的具体生理信息，为实现智能化生理分析平台提供前期基础。
+              </p>
+              <p class="text-[18px] leading-7 mb-4 text-justify">
+                软件基于
+                <strong>Web 技术（HTML5/Flask）</strong>
+                开发，实现了从传统桌面应用到 B/S 架构的跨越，用户无需安装 MATLAB
+                即可在浏览器中运行。
+              </p>
+            </div>
+
+            <div id="intro-tech" class="mb-12">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-6 pl-4 border-l-4 border-blue-600"
+              >
+                1.2 技术特点
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 卡片样式 -->
+                <div class="p-5 bg-gray-50 rounded-xl border border-gray-200">
+                  <h4 class="text-lg font-bold text-gray-900 mb-2">
+                    面向对象的系统架构
+                  </h4>
+                  <p class="text-sm">
+                    模块化程度高，便于功能扩展与维护，代码复用性强。
+                  </p>
+                </div>
+                <div class="p-5 bg-gray-50 rounded-xl border border-gray-200">
+                  <h4 class="text-lg font-bold text-gray-900 mb-2">
+                    多通道信号并行处理
+                  </h4>
+                  <p class="text-sm">
+                    支持同时处理 60
+                    个通道的心肌细胞信号，具备高效的加载与分析能力。
+                  </p>
+                </div>
+                <div class="p-5 bg-gray-50 rounded-xl border border-gray-200">
+                  <h4 class="text-lg font-bold text-gray-900 mb-2">
+                    灵活的交互式可视化
+                  </h4>
+                  <p class="text-sm">
+                    提供原始波形、二维热力图、滤波后信号等多种展示方式。
+                  </p>
+                </div>
+                <div class="p-5 bg-gray-50 rounded-xl border border-gray-200">
+                  <h4 class="text-lg font-bold text-gray-900 mb-2">
+                    智能信号分析
+                  </h4>
+                  <p class="text-sm">
+                    集成 R 峰检测、T 波识别算法，自动生成峰值报告。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 2. 功能模块 -->
+          <section id="modules">
+            <h1
+              class="text-4xl font-extrabold text-gray-900 mb-8 border-b-2 border-gray-100 pb-4 mt-16"
+            >
+              2. 主要功能模块介绍
+            </h1>
+            <p class="text-[18px] leading-7 mb-4 text-justify">
+              该平台主要有两大模式，为离线模式和实时监测模式，主要涉及五大模块，分别为输入模块，原始信号观察模块，放电行为分析模块，信号处理模块，输出模块。
+            </p>
+            <div class="my-6">
+              <img
+                src="{{ url_for('static', filename='doc_images/shou_ye.png') }}"
+                alt="系统初始页面"
+                class="w-full h-auto rounded-lg"
+              />
+              <!-- 下面是可选的图片说明文字 -->
+              <p class="mt-2 text-center text-sm text-gray-500">系统初始页面</p>
+            </div>
+
+            <div id="mod-input" class="mb-10">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                2.1 输入模块
+              </h3>
+              <p class="text-[18px] leading-7 mb-2">
+                <strong>功能说明：</strong>该平台离线模式支持用户导入心肌信号的
+                <code>.h5</code> 格式文件，用于分析不同的测试数据。
+              </p>
+
+              <p class="text-[18px] leading-7">
+                <strong>操作流程：</strong>点击
+                <i class="fa fa-folder-open text-yellow-500 mx-1"></i>
+                文件夹按钮，选择本地h5文件，等待数据平台读取数据直至显示“读取文件成功”。
+              </p>
+            </div>
+
+            <div class="my-6">
+              <!-- 2×2 图片网格 -->
+              <div class="grid grid-cols-2 gap-2">
+                <img
+                  src="{{ url_for('static', filename='doc_images/shu_ru_mo_kuai_1.png') }}"
+                  alt="输入模块 1"
+                  class="w-full h-auto rounded-lg"
+                />
+                <img
+                  src="{{ url_for('static', filename='doc_images/shu_ru_mo_kuai_2.png') }}"
+                  alt="输入模块 2"
+                  class="w-full h-auto rounded-lg"
+                />
+                <img
+                  src="{{ url_for('static', filename='doc_images/shu_ru_mo_kuai_3.png') }}"
+                  alt="输入模块 3"
+                  class="w-full h-auto rounded-lg"
+                />
+                <img
+                  src="{{ url_for('static', filename='doc_images/shu_ru_mo_kuai_4.png') }}"
+                  alt="输入模块 4"
+                  class="w-full h-auto rounded-lg"
+                />
+              </div>
+
+              <!-- 图注 -->
+              <p class="mt-2 text-center text-sm text-gray-500">
+                输入模块界面及其操作流程
+              </p>
+            </div>
+
+            <div id="mod-raw" class="mb-10">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                2.2 原始信号观察模块
+              </h3>
+              <p class="text-[18px] leading-7 mb-4">
+                <strong>功能说明：</strong>
+              </p>
+              <ul
+                class="list-disc list-inside space-y-2 mb-4 bg-gray-50 p-4 rounded-lg"
+              >
+                <li>
+                  <strong>面板 1 (Overview)</strong>：显示 60
+                  个通道的信号缩略图。通过调整控制界面的电压范围，时间间隔，以及起始时间来呈现用户需要的图像。
+                </li>
+                <li>
+                  <strong>面板 3 (Detail)</strong
+                  >：显示特定通道的精细原始图像。输入特定的通道，会在面板 3
+                  上呈现该通道的原始心肌细胞信号图像，用于直观呈现数据和信息。
+                </li>
+              </ul>
+            </div>
+
+            <p class="text-[18px] leading-7 mb-4">
+              <strong>操作流程：</strong>
+            </p>
+
+            <p class="text-[18px] leading-7 mb-4 text-justify">
+              用户点击<strong>“Plot”</strong>按钮，面板 1 上可绘制 60
+              个通道的原始心肌细胞信号的缩略图。输入<strong>“Tab”</strong>中任意的通道标签，点击<strong>“Plot”</strong>按钮，可在面板
+              3
+              上呈现该通道的原始心肌细胞信号图像。可调节<strong>“Voltage”</strong>来控制纵轴的电压范围，调节<strong
+                >“Time Interval”</strong
+              >来控制横轴的时间间隔，调节<strong>“Start Time”</strong
+              >来控制横轴的开始时间。
+            </p>
+
+            <div class="my-6">
+              <!-- 2×2 图片网格 -->
+              <div class="grid grid-cols-1 gap-2">
+                <img
+                  src="{{ url_for('static', filename='doc_images/yvan_shi_2.png') }}"
+                  alt="原始信号观察模块 1"
+                  class="w-full h-auto rounded-lg"
+                />
+                <img
+                  src="{{ url_for('static', filename='doc_images/yvan_shi_1.png') }}"
+                  alt="原始信号观察模块 2"
+                  class="w-full h-auto rounded-lg"
+                />
+              </div>
+
+              <!-- 图注 -->
+              <p class="mt-2 text-center text-sm text-gray-500">
+                原始信号观察模块界面及其操作流程
+              </p>
+            </div>
+
+            <div id="mod-discharge" class="mb-10">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                2.3 放电行为分析模块 (Heated Map)
+              </h3>
+              <p class="text-[18px] leading-7 mb-4">
+                <strong>功能说明：</strong>
+              </p>
+              <p class="text-[18px] leading-7 mb-4 text-justify">
+                对 Raw Data Explorer
+                中的数据进行分析，得到放电此时，再针对每次放电事件，
+                生成放电顺序的的二维热力图，展示放电顺序随时间的变化，并且可绘制梯度场矢量。同时显示每次放电第一个电极的实际测量时间。
+              </p>
+
+              <div
+                class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg"
+              >
+                <h4 class="text-[18px] font-bold text-blue-800 mb-2">
+                  <i class="fa fa-info-circle mr-2"></i>可视化特征
+                </h4>
+                <ul
+                  class="list-disc list-inside space-y-1 text-sm text-blue-900"
+                >
+                  <li>
+                    <strong>颜色条</strong
+                    >：对应数值最低的颜色（如深蓝）代表起始放电位置。
+                  </li>
+                  <li>
+                    <strong>箭头模拟</strong
+                    >：可选择用箭头的大小和方向模拟放电传播过程。
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <p class="text-[18px] leading-7 mb-4">
+              <strong>操作流程：</strong>
+            </p>
+
+            <p class="text-[18px] leading-7 mb-4 text-justify">
+              用户点击<strong>“Discharge Analyse”</strong>进入放电分析界面。点击
+              <strong>“Discharge Detection”</strong>，算法即可检测出放电次数。
+              调整<strong>“Epoch”</strong>选择观察第几次放电，即可在<strong>“Time”</strong>栏中得到该次放电的开始时间。
+              随后点击<strong>“Plot”</strong>按钮，可在面板2
+              上呈现该次放电顺序随时间变化的二维热力图。在面板2中，对应数值最低的颜色条（蓝色）为此次放电的第一个电极的实际位置。
+              点击“Arrow”按钮为热力图加上梯度场矢量，点击“Remove”去掉箭头。
+            </p>
+
+            <div class="my-6">
+              <!-- 2×2 图片网格 -->
+              <div class="grid grid-cols-2 gap-2">
+                <img
+                  src="{{ url_for('static', filename='doc_images/discharge1.png') }}"
+                  alt="放电行为分析模块 1"
+                  class="w-full h-auto rounded-lg"
+                />
+                <img
+                  src="{{ url_for('static', filename='doc_images/discharge2.png') }}"
+                  alt="放电行为分析模块 2"
+                  class="w-full h-auto rounded-lg"
+                />
+                <img
+                  src="{{ url_for('static', filename='doc_images/discharge3.png') }}"
+                  alt="放电行为分析模块 3"
+                  class="w-full h-auto rounded-lg"
+                />
+                <img
+                  src="{{ url_for('static', filename='doc_images/discharge4.png') }}"
+                  alt="放电行为分析模块 4"
+                  class="w-full h-auto rounded-lg"
+                />
+              </div>
+
+              <!-- 图注 -->
+              <p class="mt-2 text-center text-sm text-gray-500">
+                放电行为分析模块界面及其操作流程
+              </p>
+            </div>
+
+            <div id="mod-process" class="mb-10">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                2.4 信号处理模块 (Filtered Signal)
+              </h3>
+              <p class="text-[18px] leading-7 mb-4">
+                <strong>功能说明：</strong>从 60
+                个通道中选择特定通道，显示处理后的信号。
+              </p>
+              <p class="text-[18px] leading-7 mb-2">
+                <strong>信号类型 (Type)：</strong>
+              </p>
+              <div class="grid grid-cols-2 gap-4 my-4">
+                <div
+                  class="bg-gray-50 p-3 rounded border border-gray-200 text-sm"
+                >
+                  <strong>All Signals</strong><br />综合显示所有步骤
+                </div>
+                <div
+                  class="bg-gray-50 p-3 rounded border border-gray-200 text-sm"
+                >
+                  <strong>Original Signal</strong><br />原始信号
+                </div>
+                <div
+                  class="bg-gray-50 p-3 rounded border border-gray-200 text-sm"
+                >
+                  <strong>With R-Peaks</strong><br />带 R 峰标注
+                </div>
+                <div
+                  class="bg-gray-50 p-3 rounded border border-gray-200 text-sm"
+                >
+                  <strong>Cleaned Signal</strong><br />去噪后的信号
+                </div>
+              </div>
+              <p class="text-[18px] leading-7">
+                点击 <strong>Analyze</strong> 按钮可输出 R 和 T 波的峰值报告。
+              </p>
+
+              <p class="text-[18px] leading-7 mb-4">
+                <strong>操作流程：</strong>
+              </p>
+
+              <p class="text-[18px] leading-7 mb-4 text-justify">
+                切换为“Filtered
+                Signal”界面，输入“Channel”中任意的通道标签，点击“Plot”按钮或按键盘上的“Enter”键，在坐标轴
+                4 上呈现该通道的处理后的细胞信号图像。 调节“Time
+                Interval”来控制横轴的时间间隔。 调节“Start
+                Time”来控制横轴的开始时间。 选择“Type”中的不同信号类型“All
+                Signals”，“Original Signal”，“Original Signal with
+                R-Peaks”，“Cleaned Signal”来显示不同处理后的细胞信号图像。
+                点击“Analyze”按钮，输出R和T波的峰值报告，等待数据计算，出现“ECD
+                节点时间已成功保存”提示，代表保存成功。
+              </p>
+            </div>
+
+            <div class="my-6">
+              <img
+                src="{{ url_for('static', filename='doc_images/lvbo.png') }}"
+                alt="信号处理模块使用过程"
+                class="w-full h-auto rounded-lg"
+              />
+              <!-- 下面是可选的图片说明文字 -->
+              <p class="mt-2 text-center text-sm text-gray-500">
+                信号处理模块界面及其操作流程
+              </p>
+            </div>
+
+            <div id="mod-output" class="mb-10">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                2.5 输出模块
+              </h3>
+              <p class="text-[18px] leading-7">
+                <strong>功能说明：</strong
+                >允许用户自定义文件名，将各个坐标轴的图像保存为背景透明的格式。同时支持导出
+                R 和 T 波的峰值分析报告。
+              </p>
+            </div>
+
+            <div class="my-6">
+              <!-- 2×2 图片网格 -->
+              <div class="grid grid-cols-1 gap-2">
+                <img
+                  src="{{ url_for('static', filename='doc_images/export1.png') }}"
+                  alt="输出保存模块 1"
+                  class="w-full h-auto rounded-lg"
+                />
+                <img
+                  src="{{ url_for('static', filename='doc_images/export2.png') }}"
+                  alt="输出保存模块 2"
+                  class="w-full h-auto rounded-lg"
+                />
+              </div>
+
+              <!-- 图注 -->
+              <p class="mt-2 text-center text-sm text-gray-500">
+                输出保存模块
+              </p>
+            </div>
+          </section>
+
+          <!-- 3. 操作流程 -->
+          <section id="steps">
+            <h1
+              class="text-4xl font-extrabold text-gray-900 mb-8 border-b-2 border-gray-100 pb-4 mt-16"
+            >
+              3. 软件使用详细说明
+            </h1>
+
+            <div id="step-init" class="mb-10">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                第一步：进入初始界面
+              </h3>
+              <div class="flex items-start">
+                <span
+                  class="inline-flex items-center justify-center w-8 h-8 mr-4 bg-blue-100 text-blue-600 rounded-full font-bold text-lg flex-shrink-0"
+                  >1</span
+                >
+                <p class="text-[18px] leading-7 pt-1">
+                  打开浏览器访问网页，进入初始界面。界面包含：左侧导航栏（界面选择）、中间控制区（参数设置）和右侧绘图区。
+                </p>
+              </div>
+            </div>
+
+            <div id="step-input" class="mb-10">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                第二步：输入文件
+              </h3>
+              <div class="flex items-start">
+                <span
+                  class="inline-flex items-center justify-center w-8 h-8 mr-4 bg-blue-100 text-blue-600 rounded-full font-bold text-lg flex-shrink-0"
+                  >2</span
+                >
+                <p class="text-[18px] leading-7 pt-1">
+                  在
+                  <strong>Raw Data Explorer</strong>
+                  界面，点击黄色的文件夹图标。选择本地存储的 H5
+                  文件并打开。等待系统提示“文件读取成功”。
+                </p>
+              </div>
+            </div>
+
+            <div id="step-raw" class="mb-10">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                第三步：绘制原始心肌信号图像
+              </h3>
+              <div class="flex items-start">
+                <span
+                  class="inline-flex items-center justify-center w-8 h-8 mr-4 bg-blue-100 text-blue-600 rounded-full font-bold text-lg flex-shrink-0"
+                  >3</span
+                >
+                <div class="flex-1">
+                  <ol
+                    class="list-decimal list-inside space-y-2 bg-gray-50 p-4 rounded-lg"
+                  >
+                    <li>
+                      点击 <strong>Plot</strong> 按钮，在坐标轴 1 上绘制 60
+                      通道缩略图。
+                    </li>
+                    <li>
+                      在 <strong>Tab</strong> 输入框中输入通道号（如
+                      21），再次点击 Plot，坐标轴 3 将显示该通道细节。
+                    </li>
+                    <li>
+                      调节 <strong>Voltage</strong> 和
+                      <strong>Time Interval</strong> 优化视图。
+                    </li>
+                    <li>点击 <strong>Export</strong> 按钮保存图像。</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <div id="step-heat" class="mb-10">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                第四步：绘制放电顺序热力图
+              </h3>
+              <div class="flex items-start">
+                <span
+                  class="inline-flex items-center justify-center w-8 h-8 mr-4 bg-blue-100 text-blue-600 rounded-full font-bold text-lg flex-shrink-0"
+                  >4</span
+                >
+                <div class="flex-1">
+                  <ol
+                    class="list-decimal list-inside space-y-2 bg-gray-50 p-4 rounded-lg"
+                  >
+                    <li>切换至 <strong>Heated Map</strong> 界面。</li>
+                    <li>
+                      输入 <strong>Discharge</strong> 次数（如 3），点击
+                      Plot。坐标轴 2 将显示热力图。
+                    </li>
+                    <li>调节 <strong>Color Picker</strong> 更改颜色风格。</li>
+                    <li>点击 <strong>Arrow</strong> 按钮添加传播方向箭头。</li>
+                  </ol>
+                  <div
+                    class="bg-yellow-50 text-yellow-800 p-3 rounded mt-2 text-sm border-l-4 border-yellow-400"
+                  >
+                    <i class="fa fa-lightbulb-o mr-2"></i>
+                    <strong>小技巧：</strong> 将热力图显示的 Time 复制回 Raw
+                    Data Explorer 的 Start Time，可精确定位原始波形。
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="step-filter" class="mb-10">
+              <h3
+                class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+              >
+                第五步：绘制处理后的信号图像
+              </h3>
+              <div class="flex items-start">
+                <span
+                  class="inline-flex items-center justify-center w-8 h-8 mr-4 bg-blue-100 text-blue-600 rounded-full font-bold text-lg flex-shrink-0"
+                  >5</span
+                >
+                <div class="flex-1">
+                  <ol
+                    class="list-decimal list-inside space-y-2 bg-gray-50 p-4 rounded-lg"
+                  >
+                    <li>切换至 <strong>Filtered Signal</strong> 界面。</li>
+                    <li>输入 <strong>Channel</strong> 通道号。</li>
+                    <li>
+                      选择 <strong>Type</strong>（如 Cleaned Signal），点击
+                      Plot。
+                    </li>
+                    <li>
+                      点击 <strong>Analyze</strong> 按钮，等待数据计算。出现“ECD
+                      节点时间已成功保存”提示即代表成功。
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 4. 实时模式 -->
+          <section id="realtime">
+            <h1
+              class="text-4xl font-extrabold text-gray-900 mb-8 border-b-2 border-gray-100 pb-4 mt-16"
+            >
+              4. 实时在线监测 (Web版专属功能)
+            </h1>
+
+            <div
+              class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-8 text-yellow-800 rounded-r-lg"
+            >
+              <i class="fa fa-lock mr-2"></i>
+              注意：此功能需登录账号后使用。
+            </div>
+            <p class="text-[18px] leading-7 mb-6">
+              Web 版本支持通过 WebSocket 协议连接实验室设备，实现远程实时监控。
+            </p>
+
+            <h3
+              class="text-2xl font-bold text-gray-800 mb-4 pl-4 border-l-4 border-blue-600"
+            >
+              操作步骤
+            </h3>
+            <ol class="list-decimal list-inside space-y-4 bg-white p-0">
+              <li class="pl-2">
+                点击右上角头像 &rarr; <strong>登录</strong>。
+              </li>
+              <li class="pl-2">登录后进入 <strong>我的设备</strong> 页面。</li>
+              <li class="pl-2">
+                点击 <strong>添加新设备</strong>，填写设备名称与 IP。
+              </li>
+              <li class="pl-2">
+                点击设备卡片上的 <strong>连接监测</strong> 按钮。
+              </li>
+              <li class="pl-2">
+                系统自动跳转回主界面，实时波形将覆盖静态图表。
+              </li>
+            </ol>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

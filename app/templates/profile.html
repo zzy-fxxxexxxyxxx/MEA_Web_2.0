@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>用户中心</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 h-screen flex items-center justify-center font-sans text-gray-700">
+
+    <div class="bg-white rounded-xl shadow-lg border border-gray-100 w-full max-w-3xl flex overflow-hidden">
+        
+        <!-- 左侧：头像区 (极简风) -->
+        <div class="w-1/3 bg-gray-100 border-r border-gray-100 p-8 flex flex-col items-center justify-center">
+            <!-- 头像区域 (带上传功能) -->
+            <div class="relative group w-32 h-32 mx-auto mb-6">
+                <!-- 1. 圆形容器 -->
+                <div class="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
+                    <!-- 显示头像：逻辑是如果 image_file 包含 '/' (说明是新上传的 avatars/xxx.jpg)，就直接用；否则视为默认 user.jpg -->
+                    <img src="{{ url_for('static', filename=current_user.image_file) }}" 
+                         alt="Avatar" class="w-full h-full object-cover">
+                </div>
+
+                <!-- 2. 悬浮遮罩 (点击触发上传) -->
+                <label for="avatar-upload" 
+                       class="absolute inset-0 rounded-full bg-black bg-opacity-50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white">
+                    <i class="fa fa-camera text-2xl mb-1"></i>
+                    <span class="text-xs font-bold">更换头像</span>
+                </label>
+
+                <!-- 3. 隐藏的表单 (利用 JS 自动提交) -->
+                <form id="avatar-form" action="/upload_avatar" method="POST" enctype="multipart/form-data">
+                    <input type="file" id="avatar-upload" name="avatar" class="hidden" accept="image/*" onchange="document.getElementById('avatar-form').submit()">
+                </form>
+            </div>
+            <!-- 大字显示昵称，小字显示账号 -->
+            <h2 class="text-xl font-bold text-gray-800">{{ current_user.nickname }}</h2>
+            <p class="text-sm text-gray-400 mt-1">@{{ current_user.username }}</p>
+            
+            <div class="mt-6 w-full text-center">
+                <p class="text-xs text-gray-400 uppercase tracking-wide">注册时间</p>
+                <p class="font-medium text-gray-600">
+                    {{ current_user.join_date.strftime('%Y-%m-%d') if current_user.join_date else '2026-01-01' }}
+                </p>
+            </div>
+        </div>
+
+        <!-- 右侧：编辑区 -->
+        <div class="w-2/3 p-10 relative">
+            <div class="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-800">个人资料</h3>
+                <span class="bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-medium">账号正常</span>
+            </div>
+
+            <!-- 修改资料表单 -->
+            <form action="/update_profile" method="POST" class="space-y-6">
+                <!-- 账号 (只读) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">登录账号 (不可修改)</label>
+                    <input type="text" value="{{ current_user.username }}" disabled 
+                           class="w-full px-4 py-2 bg-gray-100 border border-gray-200 rounded text-gray-500 cursor-not-allowed">
+                </div>
+
+                <!-- 昵称 (可改) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">用户昵称</label>
+                    <div class="flex space-x-2">
+                        <input type="text" name="nickname" value="{{ current_user.nickname }}" required
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors">
+                            保存
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">这是您在系统中展示的名字，可以随时修改。</p>
+                </div>
+            </form>
+
+            <!-- 底部操作栏 -->
+            <div class="mt-12 pt-6 border-t border-gray-100 flex justify-between items-center">
+                <a href="/" class="text-gray-500 hover:text-blue-600 text-sm font-medium transition-colors flex items-center">
+                    <i class="fa fa-arrow-left mr-2"></i> 返回首页
+                </a>
+                <a href="/logout" class="text-red-500 hover:text-red-700 text-sm font-medium transition-colors flex items-center">
+                    <i class="fa fa-sign-out mr-2"></i> 退出登录
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
