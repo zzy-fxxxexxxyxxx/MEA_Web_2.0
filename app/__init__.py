@@ -1,3 +1,6 @@
+# app/__init__.py
+
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
@@ -9,8 +12,19 @@ app = Flask(__name__)
 
 # 2. 配置参数
 app.secret_key = 'your_secret_key'
-# 数据库路径配置
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+
+# --- 数据库配置 (核心修改部分) ---
+# 尝试从环境变量获取 'DATABASE_URL' (Render 云端会自动提供这个变量)
+database_url = os.environ.get('DATABASE_URL')
+
+# 兼容性处理：Render 给的地址可能是 postgres://，但 SQLAlchemy 需要 postgresql://
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+# 智能选择：如果云端有地址就用云端的，否则(在本地)就用 sqlite
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///site.db'
+# ------------------------------
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # 3. 初始化插件
