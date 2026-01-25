@@ -22,7 +22,11 @@ if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
 # 智能选择：如果云端有地址就用云端的，否则(在本地)就用 sqlite
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///site.db'
+# app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///site.db'
+# ------------------------------
+
+# 非智能选择：用本地sqlite
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 # ------------------------------
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

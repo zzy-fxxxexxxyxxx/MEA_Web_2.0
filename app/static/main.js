@@ -621,7 +621,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 // --- 配置区 ---
 // --- 配置区 ---
 const NUM_CHANNELS = 8;        // 通道数量
-const VOLTAGE_RANGE = 100000;     // 每一路的显示范围 (例如 ±100 μV)
+const VOLTAGE_RANGE = 500;     // 每一路的显示范围 (例如 ±100 μV)
 const WINDOW_SIZE = 500;       // 时间窗口大小
 
 if (currentDeviceName) {
