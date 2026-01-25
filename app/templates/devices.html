@@ -21,8 +21,6 @@
       <a href="/" class="text-gray-500 hover:text-blue-600">返回首页</a>
     </nav>
 
-
-
     <div class="container mx-auto px-6 py-8">
       <!-- 设备网格 -->
       <div
@@ -62,13 +60,19 @@
             >
           </div>
 
-          <div class="p-6 flex-1">
+          <!-- 卡片主体 (添加了 onclick 事件) -->
+          <div
+            class="p-6 flex-1 cursor-pointer hover:bg-gray-50 transition-colors"
+            onclick="showDeviceDetail('{{ device.name }}', '{{ device.ip_address }}', '{{ device.description }}', '{{ device.api_key }}')"
+          >
             <div class="flex items-center mb-4">
+              <!-- 图标 -->
               <div
                 class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600"
               >
                 <i class="fa fa-microchip text-lg"></i>
               </div>
+              <!-- 名字和IP -->
               <div class="ml-3">
                 <h3 class="font-bold text-gray-800">{{ device.name }}</h3>
                 <p class="text-xs text-gray-500 font-mono">
@@ -76,6 +80,7 @@
                 </p>
               </div>
             </div>
+            <!-- 描述 -->
             <p class="text-sm text-gray-400 line-clamp-2">
               {{ device.description or "暂无描述" }}
             </p>
@@ -83,22 +88,40 @@
 
           <!-- 底部操作栏 -->
           <div
-            class="bg-gray-50 px-6 py-3 border-t border-gray-100 flex justify-between items-center"
+            class="bg-gray-50 px-4 py-3 border-t border-gray-100 flex items-center"
           >
-            <!-- 【修改点】点击时，把 ID、名字、IP 都传给函数。从而都显示在弹窗中 -->
+            <!-- 1. 删除按钮 (放在最左边) -->
             <button
-              class="text-gray-400 hover:text-red-500 text-sm transition-colors"
-              onclick="confirmDelete('{{ device.id }}', '{{ device.name }}', '{{ device.ip_address }}')"
+              class="text-gray-400 hover:text-red-500 p-2 rounded-md hover:bg-red-50 transition-colors"
+              title="删除设备"
+              onclick="event.stopPropagation(); confirmDelete('{{ device.id }}', '{{ device.name }}', '{{ device.ip_address }}')"
             >
               <i class="fa fa-trash"></i>
             </button>
 
-            <a
-              href="/monitor/{{ device.id }}"
-              class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              连接监测
-            </a>
+            <!-- 这是一个弹簧，把后面的按钮挤到右边 -->
+            <div class="flex-1"></div>
+
+            <!-- 右侧按钮组 (靠右对齐，间距紧凑) -->
+            <div class="flex items-center space-x-2">
+              <!-- 2. 复制密钥按钮 (样式优化：白色背景+灰色边框，显得干净) -->
+              <button
+                class="bg-white border border-gray-400 text-gray-600 hover:text-blue-600 hover:border-blue-300 text-xs px-3 py-1.5 rounded-lg font-medium transition-all shadow-sm flex items-center"
+                title="复制 API Key"
+                onclick="event.stopPropagation(); copyCardKey('{{ device.api_key }}')"
+              >
+                <i class="fa fa-key mr-1.5"></i> 复制密钥
+              </button>
+
+              <!-- 3. 连接按钮 (保持蓝色强调色) -->
+              <a
+                href="/monitor/{{ device.id }}"
+                onclick="event.stopPropagation()"
+                class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors shadow-sm flex items-center border border-transparent"
+              >
+                <i class="fa fa-plug mr-1.5"></i> 连接监测
+              </a>
+            </div>
           </div>
         </div>
         {% endfor %}
@@ -184,6 +207,102 @@
       </div>
     </div>
 
+    <!-- 设备详情弹窗 (Detail Modal) -->
+    <div
+      id="deviceDetailModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50"
+    >
+      <div
+        class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all"
+      >
+        <!-- 标题 -->
+        <div
+          class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4"
+        >
+          <h3 class="text-xl font-bold text-gray-800">设备详情</h3>
+          <button
+            onclick="
+              document
+                .getElementById('deviceDetailModal')
+                .classList.add('hidden')
+            "
+            class="text-gray-400 hover:text-gray-600"
+          >
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <!-- 内容区 -->
+        <div class="space-y-5">
+          <!-- 设备名称 -->
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1"
+              >设备名称</label
+            >
+            <p id="detailName" class="text-lg font-semibold text-gray-800">
+              加载中...
+            </p>
+          </div>
+
+          <!-- IP 地址 -->
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1"
+              >IP 地址</label
+            >
+            <div class="flex items-center">
+              <i class="fa fa-globe text-gray-400 mr-2"></i>
+              <p id="detailIp" class="text-gray-600 font-mono">0.0.0.0</p>
+            </div>
+          </div>
+
+          <!-- 备注信息 -->
+          <div>
+            <label
+              class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1"
+              >备注信息</label
+            >
+            <p
+              id="detailDesc"
+              class="text-gray-600 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100"
+            >
+              暂无备注
+            </p>
+          </div>
+
+          <!-- 重点：设备密钥 (带复制) -->
+          <div>
+            <label
+              class="block text-xs font-bold text-blue-500 uppercase tracking-wider mb-1"
+              >设备密钥 (API Key)</label
+            >
+            <div class="flex items-center space-x-2">
+              <div
+                class="flex-1 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2 overflow-hidden"
+              >
+                <code
+                  id="detailKey"
+                  class="text-sm text-blue-800 font-mono break-all"
+                  >加载中...</code
+                >
+              </div>
+              <button
+                id="copyKeyBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex-shrink-0"
+              >
+                <i class="fa fa-copy mr-1"></i> 复制
+              </button>
+            </div>
+            <p class="text-xs text-gray-400 mt-2">
+              <i class="fa fa-info-circle mr-1"></i> 请将此密钥填入
+              <code>sender.py</code> 中的 <code>DEVICE_TOKEN</code> 字段。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 【修改点】删除确认弹窗 (增加了信息展示区域) -->
     <div
       id="deleteDeviceModal"
@@ -251,21 +370,6 @@
     </div>
 
     <!-- 【新增】控制删除逻辑的脚本 -->
-    <script>
-      // 【修改点】函数接收 3 个参数：ID, Name, IP
-      function confirmDelete(id, name, ip) {
-        // 1. 填充弹窗里的信息
-        document.getElementById("delName").textContent = name;
-        document.getElementById("delIp").textContent = ip;
-
-        // 2. 动态修改表单提交地址
-        const form = document.getElementById("deleteDeviceForm");
-        form.action = "/delete_device/" + id;
-
-        // 3. 显示弹窗
-        document.getElementById("deleteDeviceModal").classList.remove("hidden");
-      }
-    </script>
 
     <!-- 悬浮窗装饰--------------------------------------------------- -->
     <!-- Toast 容器 (固定在页面顶部居中，默认隐藏) -->
@@ -289,13 +393,15 @@
     </div>
 
     <script>
+      // ==========================================
+      // 1. Toast 消息通知逻辑
+      // ==========================================
       document.addEventListener("DOMContentLoaded", function () {
-        // 1. 检查后端有没有传过来 toast 消息
-        // 我们利用 Jinja2 把 session 里的值取出来，赋值给 JS 变量
+        // 检查后端 Session 里有没有传过来 toast 消息
         const toastMsg = "{{ session.pop('toast_message', '') }}";
         const toastType = "{{ session.pop('toast_type', 'success') }}";
 
-        // 2. 如果有消息，就显示 Toast
+        // 如果有消息，就显示 Toast
         if (toastMsg) {
           showToast(toastMsg, toastType);
         }
@@ -338,7 +444,71 @@
             "translate-y-[-20px]",
             "pointer-events-none",
           );
-        }, 1000);
+        }, 3000);
+      }
+
+      // ==========================================
+      // 2. 删除确认弹窗逻辑
+      // ==========================================
+      // 【修改点】函数接收 3 个参数：ID, Name, IP
+      function confirmDelete(id, name, ip) {
+        // 1. 填充弹窗里的信息
+        document.getElementById("delName").textContent = name;
+        document.getElementById("delIp").textContent = ip;
+
+        // 2. 动态修改表单提交地址
+        const form = document.getElementById("deleteDeviceForm");
+        form.action = "/delete_device/" + id;
+
+        // 3. 显示弹窗
+        document.getElementById("deleteDeviceModal").classList.remove("hidden");
+      }
+
+      // ==========================================
+      // 3. 设备详情弹窗逻辑 (带复制功能)
+      // ==========================================
+      function showDeviceDetail(name, ip, desc, apiKey) {
+        // 填充详情信息
+        document.getElementById("detailName").textContent = name;
+        document.getElementById("detailIp").textContent = ip;
+        // 如果备注为空或 None，显示默认文字
+        document.getElementById("detailDesc").textContent =
+          desc && desc !== "None" ? desc : "暂无备注";
+        document.getElementById("detailKey").textContent = apiKey;
+
+        // 获取复制按钮
+        const copyBtn = document.getElementById("copyKeyBtn");
+
+        // 技巧：克隆按钮以移除旧的事件监听器 (防止多次点击导致多次绑定)
+        const newBtn = copyBtn.cloneNode(true);
+        copyBtn.parentNode.replaceChild(newBtn, copyBtn);
+
+        // 绑定新的点击事件
+        newBtn.onclick = function () {
+          navigator.clipboard.writeText(apiKey).then(() => {
+            // 复制成功后的视觉反馈 (变绿 + 对勾)
+            newBtn.innerHTML = '<i class="fa fa-check mr-1"></i> 已复制';
+            newBtn.className =
+              "bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex-shrink-0";
+
+            // 2秒后恢复原样
+            setTimeout(() => {
+              newBtn.innerHTML = '<i class="fa fa-copy mr-1"></i> 复制';
+              newBtn.className =
+                "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex-shrink-0";
+            }, 2000);
+          });
+        };
+
+        // 显示详情弹窗
+        document.getElementById("deviceDetailModal").classList.remove("hidden");
+      }
+      // 快速复制卡片上的密钥
+      function copyCardKey(apiKey) {
+        navigator.clipboard.writeText(apiKey).then(() => {
+          // 复用你的 showToast 函数显示成功提示
+          showToast("设备密钥已复制到剪贴板！", "success");
+        });
       }
     </script>
   </body>

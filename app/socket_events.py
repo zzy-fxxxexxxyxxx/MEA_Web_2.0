@@ -36,20 +36,27 @@ def handle_join(data):
 @socketio.on('device_push_data')
 def handle_device_push(data):
     """
-    树莓派发送 'device_push_data' 事件时触发。
-    data 格式: {'device_id': 1, 'voltage': 123.4, 'time': 10.1}
+    data 格式改为: {'api_key': 'mea_...', 'voltage': 123.4, 'time': 10.1}
     """
-    device_id = data.get('device_id')
+    api_key = data.get('api_key') # 获取密钥
     
-    if device_id:
-        room_name = f"room_device_{device_id}"
+    # 1. 拿着密钥去数据库找设备
+    # 注意：这里需要导入 Device 模型
+    from app.models import Device
+    device = Device.query.filter_by(api_key=api_key).first()
+    
+    if device:
+        # 2. 找到了！获取它的 ID，拼凑出房间名
+        room_name = f"room_device_{device.id}"
         
-        # 核心：把收到的数据，广播给房间里的所有人
-        # 事件名 'update_signal' 必须和 main.js 里监听的一样
-        socketio.emit('update_signal', {
-            'value': data['voltage'],
-            'time': data['time']
+        # 3. 广播数据，转发整个包
+        socketio.emit('update_signal_batch', { # 改个名，叫 batch
+            'data': data['data'],
+            'fs': data.get('fs', 250)
         }, to=room_name)
         
-        # (调试用) 在服务器控制台打印一下，确定数据到了
-        # print(f"收到设备 {device_id} 数据: {data['voltage']}")
+        # 可选：更新设备状态为 online
+        # device.status = 'online'
+        # db.session.commit()
+    else:
+        print(f"⚠️ 收到非法连接，无效的 Key: {api_key}")
