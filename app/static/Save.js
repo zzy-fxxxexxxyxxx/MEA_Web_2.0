@@ -1,4 +1,46 @@
-export async function saveCanvasWithTimestamp(canvasId, baseFileName = "Original_Peak",backgroundColor="white") {
+/**
+ * 初始化所有保存按钮的监听事件
+ */
+export function initSaveButtons() {
+  // 1. Panel 1 保存
+  const btn1 = document.getElementById("savePanel1");
+  if (btn1) {
+    btn1.addEventListener("click", () => {
+      saveCanvasWithTimestamp("panel1Canvas", "Original_Peaks", "white");
+    });
+  }
+
+  // 2. Panel 3 保存
+  const btn3 = document.getElementById("savePanel3");
+  if (btn3) {
+    btn3.addEventListener("click", () => {
+      saveCanvasWithTimestamp("canvas1", "Original_Peak_Enlargement", "white");
+    });
+  }
+
+  // 3. Panel 2 保存 (SVG)
+  const btn2 = document.getElementById("savePanel2");
+  if (btn2) {
+    btn2.addEventListener("click", () => {
+      saveSVGWithFormat("panel2SVG", "Heatmap", "white");
+    });
+  }
+
+  // 4. Panel 4 保存
+  const btn4 = document.getElementById("savePanel4");
+  if (btn4) {
+    btn4.addEventListener("click", () => {
+      saveCanvasWithTimestamp("canvas2", "Filtering Signal", "white");
+    });
+  }
+}
+
+// 保存功能用到的两个内部函数
+async function saveCanvasWithTimestamp(
+  canvasId,
+  baseFileName = "Original_Peak",
+  backgroundColor = "white",
+) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) {
     alert("找不到画布！");
@@ -12,17 +54,23 @@ export async function saveCanvasWithTimestamp(canvasId, baseFileName = "Original
 
   try {
     const now = new Date();
-    const timestamp = now.getFullYear() + "-" +
-                      String(now.getMonth() + 1).padStart(2, "0") + "-" +
-                      String(now.getDate()).padStart(2, "0") + "_" +
-                      String(now.getHours()).padStart(2, "0") + "-" +
-                      String(now.getMinutes()).padStart(2, "0") + "-" +
-                      String(now.getSeconds()).padStart(2, "0");
+    const timestamp =
+      now.getFullYear() +
+      "-" +
+      String(now.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(now.getDate()).padStart(2, "0") +
+      "_" +
+      String(now.getHours()).padStart(2, "0") +
+      "-" +
+      String(now.getMinutes()).padStart(2, "0") +
+      "-" +
+      String(now.getSeconds()).padStart(2, "0");
     const suggestedName = `${baseFileName}_${timestamp}.png`;
 
     const saveHandle = await window.showSaveFilePicker({
       suggestedName,
-      types: [{ description: "PNG Image", accept: { "image/png": [".png"] } }]
+      types: [{ description: "PNG Image", accept: { "image/png": [".png"] } }],
     });
 
     // --- 创建临时 canvas 复制原 canvas 并填充背景 ---
@@ -41,7 +89,9 @@ export async function saveCanvasWithTimestamp(canvasId, baseFileName = "Original
     const writable = await saveHandle.createWritable();
 
     // 保存临时 canvas
-    const blob = await new Promise(resolve => tempCanvas.toBlob(resolve, "image/png"));
+    const blob = await new Promise((resolve) =>
+      tempCanvas.toBlob(resolve, "image/png"),
+    );
     await writable.write(blob);
     await writable.close();
 
@@ -51,7 +101,11 @@ export async function saveCanvasWithTimestamp(canvasId, baseFileName = "Original
   }
 }
 
-export async function saveSVGWithFormat(svgId, baseFileName = "Heatmap", backgroundColor = "white") {
+async function saveSVGWithFormat(
+  svgId,
+  baseFileName = "Heatmap",
+  backgroundColor = "white",
+) {
   const svg = document.getElementById(svgId);
   if (!svg) {
     alert("找不到 SVG！");
@@ -66,12 +120,18 @@ export async function saveSVGWithFormat(svgId, baseFileName = "Heatmap", backgro
   try {
     // 生成时间戳
     const now = new Date();
-    const timestamp = now.getFullYear() + "-" +
-                      String(now.getMonth() + 1).padStart(2, "0") + "-" +
-                      String(now.getDate()).padStart(2, "0") + "_" +
-                      String(now.getHours()).padStart(2, "0") + "-" +
-                      String(now.getMinutes()).padStart(2, "0") + "-" +
-                      String(now.getSeconds()).padStart(2, "0");
+    const timestamp =
+      now.getFullYear() +
+      "-" +
+      String(now.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(now.getDate()).padStart(2, "0") +
+      "_" +
+      String(now.getHours()).padStart(2, "0") +
+      "-" +
+      String(now.getMinutes()).padStart(2, "0") +
+      "-" +
+      String(now.getSeconds()).padStart(2, "0");
     const suggestedName = `${baseFileName}_${timestamp}`;
 
     // 弹出保存文件对话框，可选 SVG 或 PNG
@@ -79,22 +139,29 @@ export async function saveSVGWithFormat(svgId, baseFileName = "Heatmap", backgro
       suggestedName,
       types: [
         { description: "PNG Image", accept: { "image/png": [".png"] } },
-        { description: "SVG Image", accept: { "image/svg+xml": [".svg"] } }
-      ]
+        { description: "SVG Image", accept: { "image/svg+xml": [".svg"] } },
+      ],
     });
 
-    const fileExtension = saveHandle.name.split('.').pop().toLowerCase();
+    const fileExtension = saveHandle.name.split(".").pop().toLowerCase();
 
     // --- 处理 SVG 保存 ---
     if (fileExtension === "svg") {
       const serializer = new XMLSerializer();
       let svgString = serializer.serializeToString(svg);
 
-      if (!svgString.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
-        svgString = svgString.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      if (
+        !svgString.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)
+      ) {
+        svgString = svgString.replace(
+          /^<svg/,
+          '<svg xmlns="http://www.w3.org/2000/svg"',
+        );
       }
 
-      const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      const blob = new Blob([svgString], {
+        type: "image/svg+xml;charset=utf-8",
+      });
       const writable = await saveHandle.createWritable();
       await writable.write(blob);
       await writable.close();
@@ -109,16 +176,25 @@ export async function saveSVGWithFormat(svgId, baseFileName = "Heatmap", backgro
 
       const serializer = new XMLSerializer();
       let svgString = serializer.serializeToString(svg);
-      if (!svgString.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)) {
-        svgString = svgString.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      if (
+        !svgString.match(/^<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/)
+      ) {
+        svgString = svgString.replace(
+          /^<svg/,
+          '<svg xmlns="http://www.w3.org/2000/svg"',
+        );
       }
 
       // 创建 Image 对象
       const img = new Image();
-      const svgBlob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      const svgBlob = new Blob([svgString], {
+        type: "image/svg+xml;charset=utf-8",
+      });
       const url = URL.createObjectURL(svgBlob);
       img.src = url;
-      await new Promise(resolve => { img.onload = resolve; });
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
 
       // 绘制到临时 canvas
       const canvas = document.createElement("canvas");
@@ -133,7 +209,9 @@ export async function saveSVGWithFormat(svgId, baseFileName = "Heatmap", backgro
       ctx.drawImage(img, 0, 0, width, height);
       URL.revokeObjectURL(url);
 
-      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+      const blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/png"),
+      );
       const writable = await saveHandle.createWritable();
       await writable.write(blob);
       await writable.close();
@@ -144,8 +222,6 @@ export async function saveSVGWithFormat(svgId, baseFileName = "Heatmap", backgro
     console.error(err);
   }
 }
-
-
 
 // export async function saveCanvasWithTimestamp(
 //   canvasId,

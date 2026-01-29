@@ -101,7 +101,7 @@
         </div>
 
         <div class="flex items-center space-x-6">
-          <div class="relative">
+          <!-- <div class="relative">
             <input
               type="text"
               placeholder="Search..."
@@ -110,30 +110,61 @@
             <i
               class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
             ></i>
-          </div>
+          </div> -->
 
           <div class="flex items-center space-x-4">
-            <button
-              class="text-gray-500 hover:text-primary transition-all-300 relative"
-            >
-              <i class="fa fa-bell text-xl"></i>
-              <span
-                class="absolute -top-1 -right-1 bg-danger text-white text-xs rounded-full h-4 w-4 flex items-center justify-center"
-                >3</span
+            <!-- 🔔 铃铛通知组件容器 -->
+            <div class="relative ml-4 group">
+              <!-- 1. 铃铛按钮 (增加了 id="notifyBtn") -->
+              <button
+                id="notifyBtn"
+                class="text-gray-500 hover:text-primary transition-all-300 relative focus:outline-none"
               >
-            </button>
-            <!-- <div class="flex items-center cursor-pointer group">
-              <img
-                src="{{ url_for('static', filename='user.jpg') }}"
-                alt="User profile"
-                class="h-8 w-8 rounded-full object-cover border-2 border-transparent group-hover:border-primary transition-all-300"
-              />
+                <i class="fa fa-bell text-xl"></i>
 
-              <span class="ml-2 text-sm font-medium hidden md:block">未登录</span>
-              <i
-                class="fa fa-chevron-down ml-1 text-xs text-gray-500 hidden md:block"
-              ></i>
-            </div> -->
+                <!-- 🔴 红点/数字 (默认隐藏 hidden, id="notifyBadge") -->
+                <span
+                  id="notifyBadge"
+                  class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center"
+                >
+                  0
+                </span>
+              </button>
+
+              <!-- 2. 下拉面板 (默认隐藏 hidden, id="notifyPanel") -->
+              <!-- absolute right-0 保证它靠右对齐 -->
+              <div
+                id="notifyPanel"
+                class="hidden absolute right-0 mt-3 w-80 bg-white rounded-lg shadow-xl border border-gray-100 z-50 origin-top-right transition-all"
+              >
+                <!-- 标题栏 -->
+                <div
+                  class="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-lg"
+                >
+                  <h3 class="font-semibold text-sm text-gray-700">
+                    实验报告通知
+                  </h3>
+                  <button
+                    id="clearNotifyBtn"
+                    class="text-xs text-blue-500 hover:text-blue-700 cursor-pointer"
+                  >
+                    清空列表
+                  </button>
+                </div>
+
+                <!-- 列表容器 (内容会动态插入这里) -->
+                <div id="notifyList" class="max-h-[300px] overflow-y-auto">
+                  <!-- 空状态 -->
+                  <div
+                    id="emptyState"
+                    class="p-6 text-center text-gray-400 text-sm flex flex-col items-center"
+                  >
+                    <i class="fa fa-coffee text-2xl mb-2 text-gray-300"></i>
+                    <span>暂无新消息</span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <!-- 用户/登录区域 -->
             <div class="relative group h-full flex items-center">
@@ -601,9 +632,61 @@
           <!-- 🟦 面板1：Original Peak -->
           <div class="bg-white rounded-xl p-4 card-shadow">
             <div class="flex items-center justify-between mb-2">
-              <h2 class="text-lg font-semibold">1. Original Peak</h2>
+              <!-- 左侧：标题 + 动态设备信息 (修改了这里) -->
+              <div class="flex items-center gap-3">
+                <h2 class="text-lg font-semibold">1. Original Peak</h2>
+
+                <!-- ✨ 新增区域：设备名 | 暂停 | 停止 -->
+                <div
+                  id="deviceInfoArea"
+                  class="hidden flex items-center gap-3 bg-blue-50 px-3 py-1.5 rounded-md border border-blue-200 shadow-sm"
+                >
+                  <!-- 1. 设备名称 -->
+                  <span
+                    class="text-blue-700 font-medium text-sm flex items-center"
+                  >
+                    <!-- 呼吸灯 -->
+                    <i
+                      id="statusDot"
+                      class="fa fa-circle text-[8px] text-green-500 mr-2 animate-pulse"
+                    ></i>
+                    Device:
+                    <span id="monitorDeviceName" class="font-bold ml-1"></span>
+                  </span>
+
+                  <!-- 分割线 1 -->
+                  <span class="h-4 w-px bg-blue-200"></span>
+
+                  <!-- 2. ⏯️ 暂停/继续 按钮 -->
+                  <button
+                    id="pauseMonitorBtn"
+                    class="flex items-center text-amber-500 hover:text-amber-700 font-semibold text-sm transition-colors group"
+                    title="暂停/继续波形更新"
+                  >
+                    <!-- 默认显示暂停图标 -->
+                    <i class="fa fa-pause text-sm mr-1.5"></i>
+                    暂停
+                  </button>
+
+                  <!-- 分割线 2 -->
+                  <span class="h-4 w-px bg-blue-200"></span>
+
+                  <!-- 3. 🛑 停止按钮 -->
+                  <button
+                    id="stopMonitorBtn"
+                    class="flex items-center text-red-500 hover:text-red-700 font-semibold text-sm transition-colors group"
+                    title="断开连接"
+                  >
+                    <i
+                      class="fa fa-stop-circle text-lg mr-1.5 group-hover:scale-110 transition-transform"
+                    ></i>
+                    停止
+                  </button>
+                </div>
+              </div>
+
+              <!-- 右侧：原有的工具按钮 (保持不变) -->
               <div class="flex space-x-2">
-                <!-- 💾 保存按钮 -->
                 <button
                   id="savePanel1"
                   class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-all-300"
@@ -611,8 +694,6 @@
                 >
                   <i class="fa fa-save"></i>
                 </button>
-
-                <!-- 🔍 放大按钮 -->
                 <button
                   id="expandPanel1"
                   class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-all-300"
@@ -620,8 +701,6 @@
                 >
                   <i class="fa fa-expand"></i>
                 </button>
-
-                <!-- 🔄 刷新按钮 -->
                 <button
                   id="refreshPanel1"
                   class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-all-300"
@@ -631,10 +710,10 @@
                 </button>
               </div>
             </div>
+
             <div
               class="overflow-auto bg-gray-50 rounded-lg p-4 flex items-center justify-center h-[350px]"
             >
-              <!-- ✅ 保留原逻辑的 canvas -->
               <canvas id="panel1Canvas" data-has-content="false"></canvas>
             </div>
           </div>
@@ -689,14 +768,14 @@
           </div>
 
           <!-- 🟥 面板3：Original Peak Enlargement -->
-          <div class="bg-white rounded-xl p-4 card-shadow">
+          <!-- <div class="bg-white rounded-xl p-4 card-shadow">
             <div class="flex items-center justify-between mb-2">
               <h2 class="text-lg font-semibold">
                 3. Original Peak Enlargement
               </h2>
 
               <div class="flex space-x-2">
-                <!-- 💾 保存按钮 -->
+                
                 <button
                   id="savePanel3"
                   class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-all-300"
@@ -705,7 +784,7 @@
                   <i class="fa fa-save"></i>
                 </button>
 
-                <!-- 🔍 放大按钮 -->
+                
                 <button
                   id="expandPanel3"
                   class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-all-300"
@@ -714,7 +793,7 @@
                   <i class="fa fa-expand"></i>
                 </button>
 
-                <!-- 🔄 刷新按钮 -->
+                
                 <button
                   id="refreshPanel3"
                   class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-all-300"
@@ -727,11 +806,82 @@
             <div
               class="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg p-4 relative overflow-auto"
             >
-              <!-- ✅ 保留原逻辑的 canvas -->
+              
               <canvas
                 id="canvas1"
                 class="plot-canvas"
                 data-has-content="false"
+              ></canvas>
+            </div>
+          </div> -->
+          <!-- 🟥 面板3：Original Peak Enlargement -->
+          <div class="bg-white rounded-xl p-4 card-shadow">
+            <div class="flex items-center justify-between mb-2">
+              <!-- 左侧：标题 + 暂停按钮 -->
+              <div class="flex items-center gap-3">
+                <h2 class="text-lg font-semibold">
+                  3. Original Peak Enlargement
+                </h2>
+
+                <!-- ✨ Panel 3 的暂停区域 -->
+                <div
+                  id="panel3ControlArea"
+                  class="hidden flex items-center gap-3 bg-blue-50 px-3 py-1.5 rounded-md border border-blue-200 shadow-sm"
+                >
+                  <!-- 当前显示的通道 -->
+                  <span class="text-blue-700 font-medium text-sm">
+                    Channel:
+                    <span id="panel3ChannelDisplay" class="font-bold"
+                      >None</span
+                    >
+                  </span>
+
+                  <!-- 分割线 -->
+                  <span class="h-4 w-px bg-blue-200"></span>
+
+                  <!-- ⏯️ 暂停按钮 (独立控制 Panel 3) -->
+                  <button
+                    id="pausePanel3Btn"
+                    class="flex items-center text-amber-500 hover:text-amber-700 font-semibold text-sm transition-colors"
+                    title="暂停/继续波形更新"
+                  >
+                    <i class="fa fa-pause text-sm mr-1.5"></i> 暂停
+                  </button>
+                </div>
+              </div>
+
+              <!-- 右侧工具按钮 -->
+              <div class="flex space-x-2">
+                <button
+                  id="savePanel3"
+                  class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-all-300"
+                  title="保存"
+                >
+                  <i class="fa fa-save"></i>
+                </button>
+                <button
+                  id="expandPanel3"
+                  class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-all-300"
+                  title="放大"
+                >
+                  <i class="fa fa-expand"></i>
+                </button>
+                <button
+                  id="refreshPanel3"
+                  class="p-1.5 text-gray-500 hover:text-primary hover:bg-gray-100 rounded transition-all-300"
+                  title="刷新"
+                >
+                  <i class="fa fa-trash mr-2"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- 图表容器：使用绝对定位防止布局塌陷 -->
+            <div class="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg p-4 relative overflow-auto">
+              <canvas
+                id="canvas1"
+                data-has-content="false"
+                class="block w-full h-full"
               ></canvas>
             </div>
           </div>
@@ -804,7 +954,5 @@
       type="module"
       src="{{ url_for('static', filename='main.js') }}"
     ></script>
-    <!-- 如果是只用live sever测试前端，请用下面的路径 -->
-    <!-- <script type="module" src="../static/main.js"></script> -->
   </body>
 </html>

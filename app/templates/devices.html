@@ -51,13 +51,30 @@
           class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden flex flex-col h-48 relative group"
         >
           <!-- 设备状态指示灯 -->
-          <div class="absolute top-4 right-4 flex items-center space-x-1">
+          <!-- <div class="absolute top-4 right-4 flex items-center space-x-1">
             <span
               class="w-2 h-2 rounded-full {% if device.status == 'online' %}bg-green-500{% else %}bg-gray-400{% endif %}"
             ></span>
             <span class="text-xs text-gray-500 capitalize"
               >{{ device.status }}</span
             >
+          </div> -->
+          <!-- 设备状态指示灯 -->
+          <div class="absolute top-4 right-4 flex items-center space-x-1">
+            <!-- 圆点：加上 id="status-dot-{{ device.id }}" -->
+            <span
+              id="status-dot-{{ device.id }}"
+              class="w-2 h-2 rounded-full transition-colors duration-300 {% if device.status == 'online' %}bg-green-500{% else %}bg-gray-400{% endif %}"
+            >
+            </span>
+
+            <!-- 文字：加上 id="status-text-{{ device.id }}" -->
+            <span
+              id="status-text-{{ device.id }}"
+              class="text-xs text-gray-500 capitalize transition-colors duration-300"
+            >
+              {{ device.status }}
+            </span>
           </div>
 
           <!-- 卡片主体 (添加了 onclick 事件) -->
@@ -75,9 +92,9 @@
               <!-- 名字和IP -->
               <div class="ml-3">
                 <h3 class="font-bold text-gray-800">{{ device.name }}</h3>
-                <p class="text-xs text-gray-500 font-mono">
+                <!-- <p class="text-xs text-gray-500 font-mono">
                   {{ device.ip_address }}
-                </p>
+                </p> -->
               </div>
             </div>
             <!-- 描述 -->
@@ -161,7 +178,7 @@
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
             </div>
-            <div>
+            <!-- <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
                 >IP 地址 (模拟)</label
               >
@@ -172,7 +189,7 @@
                 placeholder="192.168.1.100"
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
-            </div>
+            </div> -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
                 >备注信息</label
@@ -246,7 +263,7 @@
           </div>
 
           <!-- IP 地址 -->
-          <div>
+          <!-- <div>
             <label
               class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1"
               >IP 地址</label
@@ -255,7 +272,7 @@
               <i class="fa fa-globe text-gray-400 mr-2"></i>
               <p id="detailIp" class="text-gray-600 font-mono">0.0.0.0</p>
             </div>
-          </div>
+          </div> -->
 
           <!-- 备注信息 -->
           <div>
@@ -296,7 +313,8 @@
             </div>
             <p class="text-xs text-gray-400 mt-2">
               <i class="fa fa-info-circle mr-1"></i> 请将此密钥填入
-              <code>sender.py</code> 中的 <code>DEVICE_TOKEN</code> 字段。
+              <code>agent_openbci.py</code> 中的
+              <code>DEVICE_TOKEN</code> 字段。
             </p>
           </div>
         </div>
@@ -339,10 +357,10 @@
                 <span class="text-gray-500">设备名称:</span>
                 <span id="delName" class="font-bold text-gray-800"></span>
               </div>
-              <div class="flex justify-between">
+              <!-- <div class="flex justify-between">
                 <span class="text-gray-500">IP 地址:</span>
                 <span id="delIp" class="font-mono text-gray-600"></span>
-              </div>
+              </div> -->
             </div>
           </div>
 
@@ -419,12 +437,12 @@
 
         // 根据类型设置样式 (简单适配 success 和 error)
         if (type === "error") {
-          titleEl.textContent = "错误";
+          titleEl.textContent = "注意！";
           boxEl.className =
             "bg-white border-l-4 border-red-500 shadow-lg rounded-md px-6 py-4 flex items-center min-w-[300px]";
           iconEl.className = "fa fa-times-circle text-red-500 text-xl mr-3";
         } else {
-          titleEl.textContent = "成功";
+          titleEl.textContent = "成功！";
           boxEl.className =
             "bg-white border-l-4 border-green-500 shadow-lg rounded-md px-6 py-4 flex items-center min-w-[300px]";
           iconEl.className = "fa fa-check-circle text-green-500 text-xl mr-3";
@@ -447,14 +465,12 @@
         }, 3000);
       }
 
-      // ==========================================
       // 2. 删除确认弹窗逻辑
-      // ==========================================
       // 【修改点】函数接收 3 个参数：ID, Name, IP
       function confirmDelete(id, name, ip) {
         // 1. 填充弹窗里的信息
         document.getElementById("delName").textContent = name;
-        document.getElementById("delIp").textContent = ip;
+        // document.getElementById("delIp").textContent = ip;
 
         // 2. 动态修改表单提交地址
         const form = document.getElementById("deleteDeviceForm");
@@ -464,13 +480,11 @@
         document.getElementById("deleteDeviceModal").classList.remove("hidden");
       }
 
-      // ==========================================
       // 3. 设备详情弹窗逻辑 (带复制功能)
-      // ==========================================
       function showDeviceDetail(name, ip, desc, apiKey) {
         // 填充详情信息
         document.getElementById("detailName").textContent = name;
-        document.getElementById("detailIp").textContent = ip;
+        // document.getElementById("detailIp").textContent = ip;
         // 如果备注为空或 None，显示默认文字
         document.getElementById("detailDesc").textContent =
           desc && desc !== "None" ? desc : "暂无备注";
@@ -511,5 +525,120 @@
         });
       }
     </script>
+
+    <script src="{{ url_for('static', filename='lib/socket.io.js') }}"></script>
+    <script>
+      // 1. 初始化 Socket
+      document.addEventListener("DOMContentLoaded", function () {
+        const socket = io();
+
+        socket.on("device_status_change", function (msg) {
+          const devId = msg.device_id;
+          const devName = msg.device_name;
+          const status = msg.status;
+          const dot = document.getElementById(`status-dot-${devId}`);
+          const text = document.getElementById(`status-text-${devId}`);
+
+          if (dot && text) {
+            // 更新文字
+            text.textContent = status;
+
+            // 强制移除旧样式，确保新样式生效
+            if (status === "online") {
+              dot.classList.remove("bg-gray-400"); // 删掉灰色
+              dot.classList.add("bg-green-500", "animate-pulse"); // 加上绿色+动画
+            } else {
+              dot.classList.remove("bg-green-500", "animate-pulse"); // 删掉绿色
+              dot.classList.add("bg-gray-400"); // 加上灰色
+            }
+
+            // 提示
+            if (typeof showToast === "function") {
+              showToast(
+                `设备 #${devName} 已${status === "online" ? "上线" : "下线"}`,
+                status === "online" ? "success" : "error",
+              );
+            }
+          }
+        });
+      });
+
+      // ... (后面保留你的 showToast, confirmDelete, showDeviceDetail) ...
+    </script>
+
+    <!-- 老版本，增加了console.log，便于调试 -->
+    <!-- <script src="{{ url_for('static', filename='lib/socket.io.js') }}"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        console.log("🚀 [DEBUG] 页面加载完毕，开始初始化 Socket...");
+
+        // 1. 建立连接
+        const socket = io();
+
+        socket.on("connect", () => {
+          console.log("✅ [DEBUG] Socket 连接成功！ID:", socket.id);
+        });
+
+        socket.on("connect_error", (err) => {
+          console.error("❌ [DEBUG] Socket 连接错误:", err);
+        });
+
+        // 2. 监听广播
+        socket.on("device_status_change", function (msg) {
+          console.log("📩 [DEBUG] 收到广播消息:", msg);
+
+          const devId = msg.device_id;
+          const status = msg.status;
+
+          // 3. 尝试查找 DOM 元素
+          const dotId = `status-dot-${devId}`;
+          const dot = document.getElementById(dotId);
+
+          console.log(`🔎 [DEBUG] 正在查找元素 ID: ${dotId}`);
+
+          if (dot) {
+            console.log("🎯 [DEBUG] 找到元素了！正在修改样式...");
+
+            // 更新文字
+            const text = document.getElementById(`status-text-${devId}`);
+            if (text) text.textContent = status;
+
+            // 强制重绘 (虽然通常不需要，但为了保险)
+            dot.style.display = "none";
+            dot.offsetHeight; // 触发 reflow
+            dot.style.display = "block";
+
+            // 更新颜色
+            if (status === "online") {
+              console.log("🟢 [DEBUG] 变绿");
+              dot.classList.remove("bg-gray-400");
+              dot.classList.add("bg-green-500", "animate-pulse");
+            } else {
+              console.log("⚪ [DEBUG] 变灰");
+              dot.classList.remove("bg-green-500", "animate-pulse");
+              dot.classList.add("bg-gray-400");
+            }
+
+            // 弹窗提示
+            if (window.showToast) {
+              showToast(
+                `设备 #${devId} 已${status === "online" ? "上线" : "下线"}`,
+                status === "online" ? "success" : "error",
+              );
+            }
+          } else {
+            console.error(
+              `😱 [DEBUG] 没找到元素！请检查 HTML 里的 ID 是不是 status-dot-${devId}`,
+            );
+            console.log(
+              "当前页面上的所有 ID:",
+              document.querySelectorAll('[id^="status-dot-"]'),
+            );
+          }
+        });
+      });
+
+      // ... (保留你原来的 showToast, confirmDelete, showDeviceDetail) ...
+    </script> -->
   </body>
 </html>

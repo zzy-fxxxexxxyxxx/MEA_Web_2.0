@@ -177,7 +177,7 @@ export async function plotAllSignals(processedData) {
     ctx.moveTo(marginLeft - 5, yPos);
     ctx.lineTo(marginLeft, yPos);
     ctx.stroke();
-    ctx.fillText(`${(1000000 * yVal).toFixed(1)} μV`, marginLeft - 8, yPos);
+    ctx.fillText(`${(1000000 * yVal).toFixed(0)} μV`, marginLeft - 8, yPos);
   }
 
   // X 轴刻度
@@ -202,7 +202,7 @@ export async function plotAllSignals(processedData) {
     marginTop + plotHeight + 16
   );
   ctx.save();
-  ctx.translate(marginLeft - 50, marginTop + plotHeight / 2);
+  ctx.translate(marginLeft - 40, marginTop + plotHeight / 2);
   ctx.rotate(-Math.PI / 2);
   ctx.textAlign = "center";
   ctx.fillText("Voltage (μV)", 0, 0);

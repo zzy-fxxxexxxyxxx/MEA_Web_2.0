@@ -1,11 +1,22 @@
 from flask import render_template, request, jsonify, redirect, url_for, flash, session
 from flask_login import login_user, logout_user, current_user, login_required
 from app import app, db, bcrypt # 从 __init__ 导入 app
-from app.models import User, Device
+from app.models import User, Device, Notification # ✨ 记得导入模型
 import numpy as np
 import neurokit2 as nk
 import os
 from werkzeug.utils import secure_filename
+# 1. 在文件最顶部添加这些导入 (如果有了就不用加)
+import os
+from flask import request, jsonify, send_from_directory, current_app
+from app import socketio  # 确保能导入 socketio 实例
+
+# 2. 定义上传文件的保存路径 (建议放在 app/static 下或者单独的 uploads 文件夹)
+# 这里我们放在 app/uploaded_reports 文件夹下
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploaded_reports')
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
+
 
 # --- 配置 ---
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -200,3 +211,105 @@ def process_signal():
 def monitor(device_id):
     device = Device.query.get_or_404(device_id)
     return render_template("MEA.html", device=device)
+
+
+# 3. 把下面这两个函数复制到文件最末尾
+
+# --- 接口 A: 接收实验室电脑上传 ---
+@app.route('/api/upload_report', methods=['POST'])
+def upload_report():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file'}), 400
+    
+    file = request.files['file']
+    api_key = request.form.get('api_key')  # 获取API Key
+    
+    # 如果提供了API Key，验证设备身份
+    if api_key:
+        from app.models import Device
+        device = Device.query.filter_by(api_key=api_key).first()
+        if not device:
+            return jsonify({'error': 'Invalid API Key'}), 401
+        
+        # 使用设备的真实名称和所属用户ID
+        device_id = device.name
+        user_id = device.user_id  # 获取设备所属用户ID
+    else:
+        # 向后兼容：如果没有提供API Key，返回错误（因为需要确定用户）
+        return jsonify({'error': 'API Key is required'}), 400
+    
+    if file:
+        filename = file.filename
+        save_path = os.path.join(UPLOAD_FOLDER, filename)
+        file.save(save_path)
+        download_url = f"/api/download/{filename}"
+        # ✨✨✨ 新增：写入数据库，并关联用户ID ✨✨✨
+        new_notif = Notification(
+            filename=filename,
+            device_id=device_id,
+            download_url=download_url,
+            user_id=user_id  # 关联到设备所属用户
+        )
+        db.session.add(new_notif)
+        db.session.commit()
+        # ✨✨✨ 结束 ✨✨✨
+
+        # Socket 广播继续保留，但只发送给特定用户
+        # 可以使用房间功能，每个用户加入自己的房间
+        socketio.emit('new_report_uploaded', new_notif.to_dict(), room=f'user_{user_id}')
+        
+        return "Upload Success", 200
+    return "Error", 500
+
+
+# 2. ✨ 新增：获取历史通知的接口
+@app.route('/api/notifications', methods=['GET'])
+def get_notifications():
+    if not current_user.is_authenticated:
+        return jsonify([])  # 未登录用户返回空数组
+    # 获取当前登录用户的最近20条通知，按时间倒序
+    notifs = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.timestamp.desc()).limit(20).all()
+    return jsonify([n.to_dict() for n in notifs])
+
+# 3. ✨ 新增：清空通知接口 (对应前端的清空按钮)
+@app.route('/api/notifications/clear', methods=['POST'])
+def clear_notifications():
+    try:
+        if current_user.is_authenticated:
+            # 只清空当前用户的通知
+            Notification.query.filter_by(user_id=current_user.id).delete()
+            db.session.commit()
+        return "Cleared", 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"清空通知失败: {str(e)}")
+        return "Error", 500
+    
+@app.route('/api/notifications/<int:notif_id>/read', methods=['POST'])
+def mark_single_notification_read(notif_id):
+    try:
+        if not current_user.is_authenticated:
+            return "Not authenticated", 401
+        
+        # 只查找当前用户的通知
+        notif = Notification.query.filter_by(id=notif_id, user_id=current_user.id).first()
+        if notif and not notif.is_read:
+            notif.is_read = True
+            db.session.commit()
+            return "Read", 200
+        return "Already read or not found", 200
+    except Exception as e:
+        db.session.rollback()
+        print(f"标记通知为已读失败: {str(e)}")
+        return "Error", 500
+    
+# --- 接口 B: 给网页下载文件 ---
+@app.route('/api/download/<path:filename>', methods=['GET'])
+@login_required  # 确保用户已登录
+def download_file(filename):
+    # 检查文件是否属于当前用户
+    notif = Notification.query.filter_by(filename=filename, user_id=current_user.id).first()
+    if not notif:
+        return jsonify({'error': 'File not found or you don\'t have permission to download it'}), 404
+    
+    return send_from_directory(UPLOAD_FOLDER, filename, as_attachment=False)
