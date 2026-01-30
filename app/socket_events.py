@@ -11,14 +11,15 @@ import time
 connected_devices = {}
 
 # --- 1. 浏览器端 (接收者) ---
-
-
 @socketio.on("connect")
 def handle_connect():
     if current_user.is_authenticated:
         print(f"✅ 用户 {current_user.username} 已连接 WebSocket")
+        room=f"user_{current_user.id}"
+        join_room(room)
+        print(f"🏠 已加入房间: {room}")
     else:
-        print("⚠️ 匿名连接 (可能是树莓派或未登录用户)")
+        print("⚠️ 匿名连接 (可能是树莓派或未登录用户)，不加入任何房间")
 
 
 @socketio.on("join_monitor")

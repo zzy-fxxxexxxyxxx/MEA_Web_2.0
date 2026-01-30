@@ -136,7 +136,7 @@ import random
 SERIAL_PORT = 'COM5'  # 请修改为你的实际端口
 BAUD_RATE = 460800    # 波特率
 SERVER_URL = "http://127.0.0.1:5000/"
-DEVICE_TOKEN = "mea_4c610d6f-1d78-4512-b78d-48875bc1a3a7" 
+DEVICE_TOKEN = "mea_a43af781-93d7-4cf3-bf40-092bbb0ebff1" 
 
 # 协议参数
 DATA_CHANNELS = 16

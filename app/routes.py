@@ -11,6 +11,10 @@ import os
 from flask import request, jsonify, send_from_directory, current_app
 from app import socketio  # 确保能导入 socketio 实例
 
+
+# @app.route('/api/upload_report', methods=['POST'])该路由执行写入数据库的操作
+# 由file.py调用这个路由
+
 # 2. 定义上传文件的保存路径 (建议放在 app/static 下或者单独的 uploads 文件夹)
 # 这里我们放在 app/uploaded_reports 文件夹下
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploaded_reports')
@@ -24,7 +28,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # --- 页面路由 ---
-# 0. 注册路由 (最终版：使用模板 + Flash提示)
+# 0. 首页路由 (最终版：使用模板 + Flash提示)
 @app.route("/")
 def index():
     return render_template("MEA.html")
@@ -130,6 +134,31 @@ def upload_avatar():
         # flash('不支持的文件格式，请上传 jpg/png', 'error')
     return redirect(url_for('profile'))
 
+# 10. 帮助文档
+@app.route("/help_doc")
+def help_doc():
+    return render_template("help.html")
+
+# 11. --- 原始信号处理功能 ---
+@app.route("/process_signal", methods=["POST"])
+def process_signal():
+    try:
+        data = request.json
+        signal = np.array(data.get("signal"), dtype=float)
+        fs = int(float(data.get("fs", 0)))
+        
+        clean = nk.ecg_clean(signal, sampling_rate=fs, method="vg")
+        _, rpeaks_dict = nk.ecg_peaks(clean, sampling_rate=fs, method="vg")
+        rpeaks = rpeaks_dict["ECG_R_Peaks"].astype(float)
+        
+        return jsonify({
+            "clean": clean.tolist(),
+            "rpeaks": rpeaks.tolist()
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # 7. 我的设备列表
 @app.route("/my_devices")
 @login_required
@@ -181,29 +210,6 @@ def delete_device(device_id):
         session['toast_type'] = "error"
     return redirect(url_for('my_devices'))
 
-# 10. 帮助文档
-@app.route("/help_doc")
-def help_doc():
-    return render_template("help.html")
-
-# 11. --- 原始信号处理功能 ---
-@app.route("/process_signal", methods=["POST"])
-def process_signal():
-    try:
-        data = request.json
-        signal = np.array(data.get("signal"), dtype=float)
-        fs = int(float(data.get("fs", 0)))
-        
-        clean = nk.ecg_clean(signal, sampling_rate=fs, method="vg")
-        _, rpeaks_dict = nk.ecg_peaks(clean, sampling_rate=fs, method="vg")
-        rpeaks = rpeaks_dict["ECG_R_Peaks"].astype(float)
-        
-        return jsonify({
-            "clean": clean.tolist(),
-            "rpeaks": rpeaks.tolist()
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 # 实时监测页面入口 (还是属于路由)
 @app.route("/monitor/<int:device_id>")
@@ -267,8 +273,8 @@ def upload_report():
 def get_notifications():
     if not current_user.is_authenticated:
         return jsonify([])  # 未登录用户返回空数组
-    # 获取当前登录用户的最近20条通知，按时间倒序
-    notifs = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.timestamp.desc()).limit(20).all()
+    # 获取当前登录用户的最近2000条通知，按时间倒序
+    notifs = Notification.query.filter_by(user_id=current_user.id).order_by(Notification.timestamp.desc()).limit(2000).all()
     return jsonify([n.to_dict() for n in notifs])
 
 # 3. ✨ 新增：清空通知接口 (对应前端的清空按钮)

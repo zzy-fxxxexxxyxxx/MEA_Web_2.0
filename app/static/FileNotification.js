@@ -1,4 +1,14 @@
 // static/Notification.js
+
+// 该代码实现文件上传功能，文件上传后理论上无需刷新就会在通知列表中显示且有记忆性。
+// 所需参数：一个socket实例
+// 第一步：用loadHistory函数读取数据库中记录的该账号的所有report，
+// 包括所有已读的和未读的文件
+// 第二步：监听socket事件，当收到后端
+// @app.route('/api/upload_report', methods=['POST'])利用socketio.emit发送的
+// 'new_report_uploaded'事件时（代码在routes.py中），调用addNotification实时显示新通知
+// ps：将上传的文件写入数据库的工作由routes.py中的'/api/upload_report'路由处理
+
 export function initNotificationSystem(socket) {
   const notifyBtn = document.getElementById("notifyBtn");
   const notifyPanel = document.getElementById("notifyPanel");
@@ -20,7 +30,6 @@ export function initNotificationSystem(socket) {
       // 但我们的 addNotification 会把新元素插到最前面 (insertBefore)
       // 所以如果历史数据是 [新, 旧, 更旧]，我们需要倒序插入，或者直接按顺序插
       // 这里建议：直接遍历插入即可
-
       // 我们先清空一下，防止重复 (如果有的话)
       notifyList.innerHTML = "";
       notifyList.appendChild(emptyState);
@@ -162,7 +171,6 @@ export function initNotificationSystem(socket) {
     };
 
     // 4. 绑定事件 (使用 querySelector 找到刚才生成的按钮)
-
     // --- 绑定【预览】事件 ---
     const viewBtn = item.querySelector(".btn-view");
     viewBtn.onclick = (e) => {
