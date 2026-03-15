@@ -2,10 +2,10 @@ import requests
 import os
 
 # 1. 确保服务器地址正确
-url = 'http://127.0.0.1:5000/api/upload_report'
+url = 'http://127.0.0.1:5001/api/upload_report'
 
 # 2. 指定你要上传的真实文件路径
-filename = '23桩基础计算书封面.pdf'  # 确保这个文件在当前目录下
+filename = '网站开发笔记.txt'  # 确保这个文件在当前目录下
 
 # 3. 填写你的API Key (从设备管理页面获取)
 api_key = 'mea_4c610d6f-1d78-4512-b78d-48875bc1a3a7'  # 替换为实际的API Key

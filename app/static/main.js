@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // 🔹 延迟 50ms 让浏览器先渲染 toast
         await new Promise((resolve) => setTimeout(resolve, 50));
         // 🔹 异步执行 detectPeaks
-        procesedData = await detectPeaks(processedData, 60, 4);
+        processedData = await detectPeaks(processedData, 60, 4);
         // 🔹 更新检测结果
         document.getElementById("detection_result").value =
           processedData.peakArriveTime.length;

@@ -1,0 +1,1 @@
+1.html也有模板，可以写一个layout.html，继承自它写新的模板。也可以在后端中使用render_template("xxx.html")直接创制出新的html（以xxx.html为模板）
