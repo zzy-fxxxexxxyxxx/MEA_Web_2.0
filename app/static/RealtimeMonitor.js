@@ -36,7 +36,8 @@ export function initRealtimeMonitor(
   setupPanel3UI(); // ✨ 初始化 Panel 3 UI
 
   // 2. Socket 监听
-  let realtimeChart = null;
+  let realtimeChartLeft = null;
+  let realtimeChartRight = null;
   let singleChart = null; // ✨ Panel 3
 
   socket.on("connect", () => {
@@ -55,7 +56,8 @@ export function initRealtimeMonitor(
     if (msg.fs) {
       currentSampleRate = msg.fs;
     }
-    if (realtimeChart) updateChartBatch(realtimeChart, msg.data);
+    // Updated: update both charts
+    updateRealtimeCharts(msg.data);
 
     // 2. ✨ 更新 Panel 3 (单通道)
     if (
@@ -81,9 +83,10 @@ export function initRealtimeMonitor(
     voltageInput.addEventListener("change", () => {
       console.log("电压量程改变，重绘图表...");
       // ✅ 新的写法：只更新配置，保留数据
-      if (realtimeChart && singleChart) {
-        updateVoltageRange(realtimeChart);
-        updateVoltageRange(singleChart); // ✨ Panel 3
+      if (realtimeChartLeft || realtimeChartRight) {
+        if (realtimeChartLeft) updateVoltageRange(realtimeChartLeft);
+        if (realtimeChartRight) updateVoltageRange(realtimeChartRight);
+        if (singleChart) updateVoltageRange(singleChart); // ✨ Panel 3
       } else {
         // 如果图表还没创建（比如刚进页面还没连上socket），那就初始化
         initRealtimeChart();
@@ -176,9 +179,8 @@ export function initRealtimeMonitor(
             }
             // ✨✨✨ 核心修改：点击继续时，立刻手动刷新一次 ✨✨✨
             // 这样用户会看到波形瞬间“跳”到了最新时刻，无缝衔接
-            if (realtimeChart) {
-              realtimeChart.update("none");
-            }
+            if (realtimeChartLeft) realtimeChartLeft.update("none");
+            if (realtimeChartRight) realtimeChartRight.update("none");
           }
         };
       }
@@ -192,16 +194,45 @@ export function initRealtimeMonitor(
   }
 
   function initRealtimeChart() {
-    const ctx = document.getElementById("panel1Canvas");
-    if (!ctx) return;
+    const ctxLeft = document.getElementById("panel1Canvas");
+    const ctxRight = document.getElementById("panel1CanvasRight");
 
-    // 核心修复：销毁旧实例
-    const existingChart = Chart.getChart(ctx);
-    if (existingChart) existingChart.destroy();
+    // 1. Destroy old instances
+    if (realtimeChartLeft) realtimeChartLeft.destroy();
+    if (realtimeChartRight) realtimeChartRight.destroy();
+    
+    // 同时也尝试用 Chart.js 静态方法销毁关联的 chart
+    const existingLeft = Chart.getChart(ctxLeft);
+    if (existingLeft) existingLeft.destroy();
+    
+    if (ctxRight) {
+        const existingRight = Chart.getChart(ctxRight);
+        if (existingRight) existingRight.destroy();
+    }
 
-    // 如果你有全局变量引用，也要清理
-    // if (realtimeChart) realtimeChart.destroy();
+    // 2. Adjust Layout for 16 channels (8 Left + 8 Right)
+    // 假设我们总是启用双列模式，因为后端有 16 通道数据
+    if (ctxRight && ctxLeft) {
+       ctxRight.classList.remove('hidden', 'w-0');
+       // 使用 flex-1 让它们自动平分剩余空间，避免 w-1/2 导致的像素计算溢出
+       ctxRight.classList.add('flex-1', 'min-w-0'); 
+       ctxLeft.classList.remove('w-full');
+       ctxLeft.classList.add('flex-1', 'min-w-0');
+    }
 
+    // 3. Create Charts
+    // Left: Ch1-Ch8 (offset 0)
+    if (ctxLeft) {
+        realtimeChartLeft = createSubChart(ctxLeft, 0);
+    }
+    // Right: Ch9-Ch16 (offset 8)
+    if (ctxRight) {
+        realtimeChartRight = createSubChart(ctxRight, 8);
+    }
+  }
+
+  // 辅助函数：创建单个Chart实例
+  function createSubChart(ctx, channelOffset) {
     const currentRange = getCurrentVoltageRange();
     const TARGET_TICK = currentRange * 0.7;
     const datasets = [];
@@ -220,20 +251,9 @@ export function initRealtimeMonitor(
       "#14C9C9",
     ];
 
-    //     const colors = [
-    //   "#000000",
-    //   "#000000",
-    //   "#000000",
-    //   "#000000",
-    //   "#000000",
-    //   "#000000",
-    //   "#000000",
-    //   "#000000",
-    // ];
-
     for (let i = 0; i < NUM_CHANNELS; i++) {
       datasets.push({
-        label: `Ch ${i + 1}`,
+        label: `Ch ${channelOffset + i + 1}`, // e.g. Ch 1 or Ch 9
         data: [],
         borderColor: colors[i % colors.length],
         borderWidth: 1.5,
@@ -262,9 +282,9 @@ export function initRealtimeMonitor(
         },
         title: {
           display: true,
-          text: `CH ${i + 1}`,
+          text: `C${channelOffset + i + 1}`,
           color: colors[i % colors.length],
-          font: { size: 11, weight: "bold" },
+          font: { size: 18, weight: "bold", family: "Arial" }, // 减小字号，指定字体
           padding: { top: 0, bottom: 0 },
           align: "center",
         },
@@ -295,12 +315,15 @@ export function initRealtimeMonitor(
       };
     }
 
-    realtimeChart = new Chart(ctx, {
+    return new Chart(ctx, {
       type: "line",
       data: { labels: [], datasets: datasets },
       options: {
         responsive: true,
+        // 关键点：禁用宽高比，让 Chart.js 填充整个 Canvas 容器
         maintainAspectRatio: false,
+        // 显式指定 pixelRatio，防止 CSS 拉伸导致文字模糊/变形
+        devicePixelRatio: window.devicePixelRatio || 1,
         animation: false,
         interaction: { mode: "none", intersect: false },
         plugins: { legend: { display: false }, tooltip: { enabled: false } },
@@ -309,12 +332,21 @@ export function initRealtimeMonitor(
     });
   }
 
-  function updateChartBatch(chart, batchData) {
+  // data update wrapper
+  function updateRealtimeCharts(batchData) {
+      if (realtimeChartLeft) updateEachChart(realtimeChartLeft, batchData, 0);
+      if (realtimeChartRight) updateEachChart(realtimeChartRight, batchData, 8);
+  }
+
+  // actual update logic (replaces updateChartBatch)
+  function updateEachChart(chart, batchData, offset) {
     const labels = chart.data.labels;
     batchData.forEach((row) => {
       labels.push("");
       for (let i = 0; i < NUM_CHANNELS; i++) {
-        const val = row[i] !== undefined ? row[i] : 0;
+        // row index = local index + offset
+        // e.g. for Right Chart (offset 8), we need row[8]..row[15]
+        const val = row[i + offset] !== undefined ? row[i + offset] : 0;
         chart.data.datasets[i].data.push(val);
       }
     });
@@ -465,7 +497,7 @@ export function initRealtimeMonitor(
 
     // Tab 有效
     if (ctrlArea) ctrlArea.classList.remove("hidden");
-    if (displaySpan) displaySpan.textContent = `CH ${activeTabChannel}`;
+    if (displaySpan) displaySpan.textContent = `C${activeTabChannel}`;
 
     // 初始化图表 (如果还没创建)
     if (!ctx) return;

@@ -712,9 +712,12 @@
             </div>
 
             <div
-              class="overflow-auto bg-gray-50 rounded-lg p-4 flex items-center justify-center h-[350px]"
+              class="overflow-auto bg-gray-50 rounded-lg p-4 flex flex-row items-center justify-center h-[350px] w-full gap-2"
+              id="panel1CanvasContainer"
             >
-              <canvas id="panel1Canvas" data-has-content="false"></canvas>
+              <canvas id="panel1Canvas" data-has-content="false" class="flex-1 w-0 h-full !h-full"></canvas>
+              <!-- 新增：右侧 Canvas，默认隐藏 -->
+              <canvas id="panel1CanvasRight" class="hidden flex-1 w-0 h-full !h-full"></canvas>
             </div>
           </div>
 

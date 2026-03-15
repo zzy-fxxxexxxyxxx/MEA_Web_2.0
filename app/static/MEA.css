@@ -319,12 +319,26 @@
 }
 
 /* 内部内容自适应放大一点点，但不溢出 */
-.single-panel-mode > div.expanded canvas,
+/* 修改：排除 id="panel1CanvasContainer" 里面的 Canvas，因为它们由 Flex 布局控制 */
+.single-panel-mode > div.expanded canvas:not(#panel1Canvas):not(#panel1CanvasRight),
 .single-panel-mode > div.expanded svg {
   width: 95% !important;
   height: 95% !important;
   object-fit: contain;
   transition: all 0.3s ease;
+}
+
+/* 专门针对 Panel 1 双 Canvas 的放大样式 */
+.single-panel-mode > div.expanded #panel1CanvasContainer {
+    width: 98% !important;
+    height: 95% !important;
+}
+
+/* 确保 Panel 1 里的 Canvas 在放大模式下占满 flex 容器 */
+.single-panel-mode > div.expanded #panel1Canvas,
+.single-panel-mode > div.expanded #panel1CanvasRight {
+    width: auto !important; /* 让 flex-1 生效 */
+    height: 100% !important;
 }
 
 

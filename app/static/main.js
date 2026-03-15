@@ -335,15 +335,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       // 重新绘制 canvas 或更新 SVG
       switch (index) {
         case 0:
-          // requestAnimationFrame(() => requestAnimationFrame(drawGridOnPanel1));
-          // if (
-          //   document.getElementById("panel1Canvas").dataset.hasContent ===
-          //   "true"
-          // ) {
-          //   requestAnimationFrame(() =>
-          //     requestAnimationFrame(() => plotWaveformsOnGrid(processedData))
-          //   );
-          // }
+          // 实时波形放大时的重绘逻辑
+          const ctxLeft = document.getElementById("panel1Canvas");
+          const ctxRight = document.getElementById("panel1CanvasRight");
+
+          // 关键修正：由于 CSS 有 transition (300ms)，需要等待动画结束后再 resize
+          // 否则 Chart.js 会在动画开始时获取旧尺寸，导致重绘不正确
+          setTimeout(() => {
+            const existingLeft = Chart.getChart(ctxLeft);
+            const existingRight = Chart.getChart(ctxRight);
+
+            if (existingLeft) existingLeft.resize();
+            if (existingRight) existingRight.resize();
+          }, 350); // 稍大于 300ms 以确保布局稳定
           break;
         case 1:
           // // SVG 调整宽高自适应
