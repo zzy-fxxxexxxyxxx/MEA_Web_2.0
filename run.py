@@ -22,7 +22,7 @@ if __name__ == "__main__":
     # with app.app_context():
     #     db.create_all()
 
-    port = int(os.environ.get("PORT", 5001))
+    port = int(os.environ.get("PORT", 5005))
 
     # 启动服务器 (支持 WebSocket)
     # !!! 注意：这里要把 app.run 改成 socketio.run !!!

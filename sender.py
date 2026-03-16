@@ -44,8 +44,12 @@ BAUD_RATE = 460800  # 波特率
 # SERVER_URL = "https://mea-web-2-0.onrender.com/"
 # DEVICE_TOKEN = "mea_92310c10-3343-4505-a93a-be5edcfe8422"  # 请填入你的 Key
 
-SERVER_URL = "http://127.0.0.1:5001/"
+SERVER_URL = "http://127.0.0.1:5005/"
 DEVICE_TOKEN = "mea_4c610d6f-1d78-4512-b78d-48875bc1a3a7"  # 请填入你的 Key
+
+# SERVER_URL = "https://mea.fxxxexxxyxxx.duckdns.org/"
+# DEVICE_TOKEN = "mea_b1a5cd4f-e856-45d9-968c-4ddb55c4deda"  # 请填入你的 Key
+
 
 # 协议参数
 DATA_CHANNELS = 16

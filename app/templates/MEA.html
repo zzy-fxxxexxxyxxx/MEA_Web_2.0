@@ -11,7 +11,8 @@
       type="image/x-icon"
       href="{{ url_for('static', filename='favicon.ico') }}"
     />
-    <link rel="stylesheet" href="{{ url_for('static', filename='MEA.css') }}" />
+    <!-- MEA.css 已被重构为 Tailwind -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='MEA.css') }}" /> -->
 
     <!-- Tailwind CSS (开发阶段用 CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -71,6 +72,30 @@
         }
         .transition-all-300 {
           transition: all 300ms ease-in-out;
+        }
+        /* Tab Active State */
+        .tablinks.active {
+          @apply bg-primary/10 text-primary font-semibold;
+        }
+        
+        /* Expand Mode Styles - Kept for complexity */
+        .single-panel-mode {
+          @apply !flex !justify-center !items-center;
+        }
+        .single-panel-mode > div.expanded {
+          @apply w-[95%] h-[85vh] max-w-[1400px] transform-none transition-all duration-300 z-50 overflow-hidden;
+        }
+        /* Canvas behavior in expanded mode */
+        .single-panel-mode > div.expanded canvas:not(#panel1Canvas):not(#panel1CanvasRight),
+        .single-panel-mode > div.expanded svg {
+          @apply !w-[95%] !h-[95%] object-contain transition-all duration-300;
+        }
+        .single-panel-mode > div.expanded #panel1CanvasContainer {
+            @apply !w-[98%] !h-[95%];
+        }
+        .single-panel-mode > div.expanded #panel1Canvas,
+        .single-panel-mode > div.expanded #panel1CanvasRight {
+            @apply !w-auto !h-full;
         }
       }
     </style>
@@ -288,21 +313,21 @@
         id="sidebar"
         class="bg-white w-64 border-r border-gray-200 flex-shrink-0 hidden lg:block transition-all-300 overflow-y-auto scrollbar-hide"
       >
-        <nav class="left-panel">
+        <nav class="p-4">
           <!-- 顶部导航标签 -->
-          <div class="tab-buttons">
+          <div class="space-y-1">
             <p
               class="text-xs uppercase text-gray-500 font-semibold tracking-wider mb-2 pl-3"
             >
               Main Interface
             </p>
-            <a href="#" class="tablinks" data-tab="Tab1">
+            <a href="#" class="tablinks cursor-pointer flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 transition-all duration-300 hover:bg-gray-100" data-tab="Tab1">
               <i class="fa fa-database w-5 h-5 mr-3"></i> Raw Data Explorer
             </a>
-            <a href="#" class="tablinks" data-tab="Tab2">
+            <a href="#" class="tablinks cursor-pointer flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 transition-all duration-300 hover:bg-gray-100" data-tab="Tab2">
               <i class="fa fa-fire w-5 h-5 mr-3"></i> Discharge Analyse
             </a>
-            <a href="#" class="tablinks" data-tab="Tab3">
+            <a href="#" class="tablinks cursor-pointer flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-700 transition-all duration-300 hover:bg-gray-100" data-tab="Tab3">
               <i class="fa fa-filter w-5 h-5 mr-3"></i> Filtered Signal
             </a>
           </div>
@@ -312,14 +337,14 @@
           <!-- 内容区 -->
           <div class="analysis-content">
             <!-- Tab 1 -->
-            <div id="Tab1" class="tabcontent space-y-5">
+            <div id="Tab1" class="tabcontent hidden space-y-5">
               <p class="text-sm text-center font-semibold tracking-wider mb-2">
                 Analysis Time Window
               </p>
 
               <!-- 文件选择 -->
-              <div class="input-button-group">
-                <button id="submitBtn" class="round-button">
+              <div class="flex items-center mx-1.5 gap-1.5">
+                <button id="submitBtn" class="w-10 h-7 flex justify-center items-center border border-gray-300 rounded bg-gray-100 hover:bg-gray-300 cursor-pointer transition-colors">
                   <img
                     src="{{ url_for('static', filename='folder.svg') }}"
                     alt="Stickman"
@@ -327,84 +352,84 @@
                     height="35"
                   />
                 </button>
-                <input type="text" id="filename" class="edit-field" disabled />
+                <input type="text" id="filename" class="flex-1 w-[90%] h-7 px-3 py-2 border border-gray-300 rounded-none text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors" disabled />
               </div>
 
               <!-- 总时长 -->
-              <div class="input-button-group">
-                <label class="form-label">Total Time</label>
-                <div class="input-container">
+              <div class="flex items-center mx-1.5 gap-1.5">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Total Time</label>
+                <div class="relative w-full">
                   <input
                     type="text"
                     id="total_time"
-                    class="form-input"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     disabled
                     title="不可手动修改"
                   />
-                  <span class="input-unit">s</span>
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">s</span>
                 </div>
               </div>
 
               <!-- 电压 -->
-              <div class="input-button-group">
-                <label class="form-label">Voltage</label>
-                <div class="input-container">
-                  <span class="input-prefix">±</span>
+              <div class="flex items-center mx-1.5 gap-1.5">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Voltage</label>
+                <div class="relative w-full">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">±</span>
                   <input
                     type="number"
                     id="voltage1"
-                    class="Voltage-input"
+                    class="w-full pl-7 pr-7 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     value="100"
                     step="10"
                     min="-1000"
                     max="1000"
                   />
-                  <span class="input-unit">μV</span>
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">μV</span>
                 </div>
               </div>
 
               <!-- 起始时间 -->
-              <div class="input-button-group">
-                <label class="form-label">Start Time</label>
-                <div class="input-container">
+              <div class="flex items-center mx-1.5 gap-1.5">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Start Time</label>
+                <div class="relative w-full">
                   <input
                     type="number"
                     id="start_time1"
-                    class="form-input"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     value="1"
                     step="1"
                     min="-1000"
                     max="1000"
                   />
-                  <span class="input-unit">s</span>
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">s</span>
                 </div>
               </div>
 
               <!-- 时间间隔 -->
-              <div class="input-button-group">
-                <label class="form-label">Time Interval</label>
-                <div class="input-container">
+              <div class="flex items-center mx-1.5 gap-1.5">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Time Interval</label>
+                <div class="relative w-full">
                   <input
                     type="number"
                     id="time_interval1"
-                    class="form-input"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     value="0.1"
                     step="1"
                     min="-1000"
                     max="1000"
                   />
-                  <span class="input-unit">s</span>
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">s</span>
                 </div>
               </div>
 
               <!-- Tab 值 -->
-              <div class="input-button-group">
-                <label class="form-label">Tab</label>
-                <div class="input-container">
+              <div class="flex items-center mx-1.5 gap-1.5">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Tab</label>
+                <div class="relative w-full">
                   <input
                     type="number"
                     id="tab1"
-                    class="form-input"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     value="0"
                     step="1"
                     min="0"
@@ -414,7 +439,7 @@
               </div>
 
               <!-- 操作按钮 -->
-              <div class="form-button-group mt-8">
+              <div class="flex items-center gap-3 mt-8">
                 <button
                   id="plot1"
                   class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-all-300 text-sm font-medium w-full justify-center"
@@ -425,7 +450,7 @@
             </div>
 
             <!-- Tab 2 -->
-            <div id="Tab2" class="tabcontent space-y-5">
+            <div id="Tab2" class="tabcontent hidden space-y-5">
               <p class="text-sm text-center font-semibold tracking-wider mb-2">
                 Discharge Detection
               </p>
@@ -441,13 +466,13 @@
               <div id="discharge_detection_result"></div>
 
               <!-- 放电次数 -->
-              <div class="input-button-group" title="不可手动修改">
-                <label class="form-label">放电次数</label>
-                <div class="input-container">
+              <div class="flex items-center mx-1.5 gap-1.5" title="不可手动修改">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">放电次数</label>
+                <div class="relative w-full">
                   <input
                     type="text"
                     id="detection_result"
-                    class="form-input"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     value="未检测"
                     disabled
                   />
@@ -456,15 +481,15 @@
 
               <!-- Epoch -->
               <div
-                class="input-button-group"
+                class="flex items-center mx-1.5 gap-1.5"
                 title="执行Discharge Detection后方可填入"
               >
-                <label class="form-label">Epoch</label>
-                <div class="input-container">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Epoch</label>
+                <div class="relative w-full">
                   <input
                     type="number"
                     id="epoch"
-                    class="form-input"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     step="1"
                     min="1"
                     max="1000"
@@ -474,50 +499,19 @@
               </div>
 
               <!-- Time -->
-              <div class="input-button-group" title="不可手动修改">
-                <label class="form-label">Time</label>
-                <div class="input-container">
-                  <input type="number" id="time" class="form-input" disabled />
-                  <span class="input-unit">s</span>
+              <div class="flex items-center mx-1.5 gap-1.5" title="不可手动修改">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Time</label>
+                <div class="relative w-full">
+                  <input type="number" id="time" class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors" disabled />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">s</span>
                 </div>
               </div>
 
               <!-- 颜色选择器 -->
-              <!-- <div class="color-picker-container">
-                <div class="color-label">Color Picker:</div>
-                <div class="custom-select" id="colorPicker">
-                  <div class="select-trigger" id="selectTrigger">
-                    <div class="color-preview" id="selectedColorPreview"></div>
-                    <div class="dropdown-arrow">▼</div>
-                  </div>
-                  <div class="select-options" id="selectOptions">
-                    <div class="option" data-value="color1">
-                      <div class="option-color" id="preview-color1"></div>
-                    </div>
-                    <div class="option" data-value="color2">
-                      <div class="option-color" id="preview-color2"></div>
-                    </div>
-                    <div class="option" data-value="color3">
-                      <div class="option-color" id="preview-color3"></div>
-                    </div>
-                    <div class="option" data-value="color4">
-                      <div class="option-color" id="preview-color4"></div>
-                    </div>
-                    <div class="option" data-value="color5">
-                      <div class="option-color" id="preview-color5"></div>
-                    </div>
-                    <div class="option" data-value="color6">
-                      <div class="option-color" id="preview-color6"></div>
-                    </div>
-                    <div class="option" data-value="color7">
-                      <div class="option-color" id="preview-color7"></div>
-                    </div>
-                  </div>
-                </div>
-              </div> -->
+              <!-- <div class="color-picker-container"> ... </div> -->
 
               <!-- 功能按钮 -->
-              <div class="form-button-group mt-4">
+              <div class="flex items-center gap-3 mt-4">
                 <button
                   id="plot2"
                   class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-all-300 text-sm font-medium w-full justify-center"
@@ -525,7 +519,7 @@
                   <i class="fa fa-play mr-2"></i> Plot
                 </button>
               </div>
-              <div class="form-button-group mt-4 flex space-x-2">
+              <div class="flex items-center gap-3 mt-4 flex space-x-2">
                 <button
                   id="arrow"
                   class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-all-300 text-sm font-medium"
@@ -543,67 +537,67 @@
             </div>
 
             <!-- Tab 3 -->
-            <div id="Tab3" class="tabcontent space-y-5">
+            <div id="Tab3" class="tabcontent hidden space-y-5">
               <p class="text-sm text-center font-semibold tracking-wider mb-2">
                 Filtered Signal
               </p>
 
-              <div class="input-button-group">
-                <label class="form-label">Voltage</label>
-                <div class="input-container">
-                  <span class="input-prefix">±</span>
+              <div class="flex items-center mx-1.5 gap-1.5">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Voltage</label>
+                <div class="relative w-full">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">±</span>
                   <input
                     type="number"
                     id="voltage3"
-                    class="Voltage-input"
+                    class="w-full pl-7 pr-7 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     value="100"
                     step="10"
                     min="0"
                     max="1000"
                   />
-                  <span class="input-unit">μV</span>
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">μV</span>
                 </div>
               </div>
 
-              <div class="input-button-group">
-                <label class="form-label">Start Time</label>
-                <div class="input-container">
+              <div class="flex items-center mx-1.5 gap-1.5">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Start Time</label>
+                <div class="relative w-full">
                   <input
                     type="number"
                     id="start_time3"
-                    class="form-input"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     value="1"
                     step="1"
                     min="-1000"
                     max="1000"
                   />
-                  <span class="input-unit">s</span>
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">s</span>
                 </div>
               </div>
 
-              <div class="input-button-group">
-                <label class="form-label">Time Interval</label>
-                <div class="input-container">
+              <div class="flex items-center mx-1.5 gap-1.5">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Time Interval</label>
+                <div class="relative w-full">
                   <input
                     type="number"
                     id="time_interval3"
-                    class="form-input"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     value="1"
                     step="1"
                     min="-1000"
                     max="1000"
                   />
-                  <span class="input-unit">s</span>
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none">s</span>
                 </div>
               </div>
 
-              <div class="input-button-group">
-                <label class="form-label">Tab</label>
-                <div class="input-container">
+              <div class="flex items-center mx-1.5 gap-1.5">
+                <label class="text-sm font-medium text-gray-700 whitespace-nowrap">Tab</label>
+                <div class="relative w-full">
                   <input
                     type="number"
                     id="tab3"
-                    class="form-input"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/30 transition-colors"
                     value="44"
                     step="1"
                     min="-1000"
@@ -612,7 +606,7 @@
                 </div>
               </div>
 
-              <div class="form-button-group mt-4">
+              <div class="flex items-center gap-3 mt-4">
                 <button
                   id="plot3"
                   class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/80 transition-all-300 text-sm font-medium w-full justify-center"
@@ -630,7 +624,7 @@
         <!-- 四宫格布局 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <!-- 🟦 面板1：Original Peak -->
-          <div class="bg-white rounded-xl p-4 card-shadow">
+          <div class="bg-white rounded-xl p-4 card-shadow transition-all duration-300">
             <div class="flex items-center justify-between mb-2">
               <!-- 左侧：标题 + 动态设备信息 (修改了这里) -->
               <div class="flex items-center gap-3">
@@ -722,7 +716,7 @@
           </div>
 
           <!-- 🟩 面板2：Heated Map -->
-          <div class="bg-white rounded-xl p-4 card-shadow">
+          <div class="bg-white rounded-xl p-4 card-shadow transition-all duration-300">
             <div class="flex items-center justify-between mb-2">
               <h2 class="text-lg font-semibold">2. Heated Map</h2>
               <div class="flex space-x-2">
@@ -818,7 +812,7 @@
             </div>
           </div> -->
           <!-- 🟥 面板3：Original Peak Enlargement -->
-          <div class="bg-white rounded-xl p-4 card-shadow">
+          <div class="bg-white rounded-xl p-4 card-shadow transition-all duration-300">
             <div class="flex items-center justify-between mb-2">
               <!-- 左侧：标题 + 暂停按钮 -->
               <div class="flex items-center gap-3">
@@ -890,7 +884,7 @@
           </div>
 
           <!-- 🟨 面板4：Filtered Signal -->
-          <div class="bg-white rounded-xl p-4 card-shadow">
+          <div class="bg-white rounded-xl p-4 card-shadow transition-all duration-300">
             <div class="flex items-center justify-between mb-2">
               <h2 class="text-lg font-semibold">4. Filtered Signal</h2>
               <div class="flex space-x-2">
