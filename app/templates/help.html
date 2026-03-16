@@ -6,9 +6,23 @@
     <title>MEA Web 2.0 用户手册</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
-      href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"
       rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#165DFF",
+            },
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
 
     <style>
       /* 仅保留滚动条样式 */
@@ -30,14 +44,6 @@
       .custom-scrollbar {
         scrollbar-width: thin;
         scrollbar-color: #cbd5e1 transparent;
-      }
-      /* 修改后：用标准 CSS (VS Code 不会报错) */
-      .nav-item:hover {
-        background-color: #eff6ff; /* 对应 bg-blue-50 */
-        color: #2563eb; /* 对应 text-blue-600 */
-        transition:
-          color 0.15s,
-          background-color 0.15s;
       }
     </style>
   </head>
@@ -87,12 +93,12 @@
             </h5>
             <a
               href="#intro-purpose"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >1.1 开发目的</a
             >
             <a
               href="#intro-tech"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >1.2 技术特点</a
             >
           </div>
@@ -104,27 +110,27 @@
             </h5>
             <a
               href="#mod-input"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >2.1 输入模块</a
             >
             <a
               href="#mod-raw"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >2.2 原始信号观察模块</a
             >
             <a
               href="#mod-discharge"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >2.3 放电行为分析模块</a
             >
             <a
               href="#mod-process"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >2.4 信号处理模块</a
             >
             <a
               href="#mod-output"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >2.5 输出模块</a
             >
           </div>
@@ -136,27 +142,27 @@
             </h5>
             <a
               href="#step-init"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >Step 1：初始界面</a
             >
             <a
               href="#step-input"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >Step 2：输入文件</a
             >
             <a
               href="#step-raw"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >Step 3：绘制原始信号</a
             >
             <a
               href="#step-heat"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >Step 4：热力图分析</a
             >
             <a
               href="#step-filter"
-              class="nav-item block px-3 py-2 text-sm text-gray-600 rounded-md"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm text-gray-600 rounded-md"
               >Step 5：信号处理</a
             >
           </div>
@@ -168,7 +174,7 @@
             </h5>
             <a
               href="#realtime"
-              class="nav-item block px-3 py-2 text-sm font-bold text-blue-600 bg-blue-50 rounded-md border border-blue-100"
+              class="hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 block px-3 py-2 text-sm font-bold text-blue-600 bg-blue-50 rounded-md border border-blue-100"
               >在线设备监控</a
             >
           </div>

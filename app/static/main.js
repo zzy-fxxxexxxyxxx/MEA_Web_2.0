@@ -310,23 +310,30 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (p !== panel) p.style.display = "none";
         });
         panel.classList.add("expanded");
-        mainGrid.classList.add("single-panel-mode");
+        // Remove lg:grid-cols-2 to force single column
+        mainGrid.classList.remove("lg:grid-cols-2");
+        mainGrid.classList.add("h-full"); // Make grid take full height if needed
         icon.classList.replace("fa-expand", "fa-compress");
 
         // 父容器高度适应 main
         if (contentWrapper) {
-          contentWrapper.style.height = "90%";
+          // Remove fixed height class if present, let it grow
+          contentWrapper.classList.remove("h-[350px]");
+          contentWrapper.classList.add("h-full");
         }
       } else {
         // 🔙 缩小状态
         panels.forEach((p) => (p.style.display = "block"));
         panel.classList.remove("expanded");
-        mainGrid.classList.remove("single-panel-mode");
+        mainGrid.classList.add("lg:grid-cols-2");
+        mainGrid.classList.remove("h-full");
         icon.classList.replace("fa-compress", "fa-expand");
 
         // 恢复原高度
         if (contentWrapper) {
-          contentWrapper.style.height = ""; // 清空，恢复 h-[350px]
+          contentWrapper.classList.remove("h-full");
+          contentWrapper.classList.add("h-[350px]");
+          contentWrapper.style.height = ""; 
         }
       }
 

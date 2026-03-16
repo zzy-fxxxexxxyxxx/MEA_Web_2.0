@@ -2,7 +2,7 @@ import requests
 import os
 
 # 1. 确保服务器地址正确
-url = 'http://127.0.0.1:5001/api/upload_report'
+url = 'http://127.0.0.1:5005/api/upload_report'
 
 # 2. 指定你要上传的真实文件路径
 filename = '网站开发笔记.txt'  # 确保这个文件在当前目录下

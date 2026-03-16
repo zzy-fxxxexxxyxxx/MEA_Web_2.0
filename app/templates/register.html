@@ -4,146 +4,82 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>注册账号</title>
-    <style>
-      /* 复用登录页的 CSS，保持风格统一 */
-      body {
-        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: #f3f4f6;
-        margin: 0;
-      }
-      .login-card {
-        background: white;
-        padding: 2.5rem;
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-        width: 100%;
-        max-width: 350px;
-      }
-      h2 {
-        text-align: center;
-        color: #1f2937;
-        margin-top: 0;
-        margin-bottom: 1.5rem;
-        font-weight: 600;
-      }
-      .form-group {
-        margin-bottom: 1rem;
-      }
-      input {
-        width: 100%;
-        padding: 12px;
-        margin: 0;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        box-sizing: border-box;
-        font-size: 14px;
-        transition: border-color 0.2s;
-      }
-      input:focus {
-        outline: none;
-        border-color: #165dff;
-        box-shadow: 0 0 0 2px rgba(22, 93, 255, 0.2);
-      }
-      button {
-        width: 100%;
-        padding: 12px;
-        background-color: #165dff;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        margin-top: 10px;
-        font-weight: 600;
-        font-size: 15px;
-        transition: background-color 0.2s;
-      }
-      button:hover {
-        background-color: #0e4bc5;
-      }
-      .links {
-        margin-top: 20px;
-        text-align: center;
-        font-size: 0.875rem;
-        color: #6b7280;
-      }
-      a {
-        color: #165dff;
-        text-decoration: none;
-        font-weight: 500;
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-
-      .alert {
-        padding: 10px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        text-align: center;
-        font-size: 0.875rem;
-        border: 1px solid transparent;
-      }
-
-      /* 成功（绿色） */
-      .alert-success {
-        background-color: #ecfdf5;
-        color: #047857;
-        border-color: #a7f3d0;
-      }
-
-      /* 错误（红色） */
-      .alert-error {
-        background-color: #fef2f2;
-        color: #b91c1c;
-        border-color: #fecaca;
-      }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#165DFF",
+            },
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
   </head>
-  <body>
-    <div class="login-card">
-      <h2>创建新账号</h2>
+  <body class="flex flex-col justify-center items-center h-screen bg-gray-100 font-sans m-0">
+    <div class="bg-white p-10 rounded-xl shadow-lg w-full max-w-[350px]">
+      <h2 class="text-center text-gray-800 mt-0 mb-6 font-semibold text-2xl">创建新账号</h2>
       
       <!-- 消息显示区 -->
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %} {% for category, message in messages %}
-      <div class="alert alert-{{ category }}">{{ message }}</div>
-      {% endfor %} {% endif %} {% endwith %}
+      {% with messages = get_flashed_messages(with_categories=true) %} 
+        {% if messages %} 
+          {% for category, message in messages %}
+            <div class="p-2.5 rounded-lg mb-4 text-center text-sm border {{ 'bg-green-50 text-green-700 border-green-200' if category == 'success' else 'bg-red-50 text-red-700 border-red-200' }}">
+              {{ message }}
+            </div>
+          {% endfor %} 
+        {% endif %} 
+      {% endwith %}
 
       <form method="post">
-        <div class="form-group">
+        <div class="mb-4">
+          <label class="block mb-1.5 text-sm text-gray-700"><i class="fa fa-user mr-1 text-gray-400"></i>用户名</label>
           <input
             type="text"
             name="username"
+            class="w-full p-3 border border-gray-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             placeholder="设置用户名"
             required
           />
         </div>
 
-        <div class="form-group">
-          <input type="text" name="nickname" placeholder="设置昵称" required />
+        <div class="mb-4">
+          <label class="block mb-1.5 text-sm text-gray-700"><i class="fa fa-user-circle mr-1 text-gray-400"></i>昵称</label>
+          <input 
+            type="text" 
+            name="nickname" 
+            class="w-full p-3 border border-gray-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            placeholder="设置昵称" 
+            required 
+          />
         </div>
-
-        <div class="form-group">
+        <div class="mb-4">
+          <label class="block mb-1.5 text-sm text-gray-700"><i class="fa fa-lock mr-1 text-gray-400"></i>密码</label>
           <input
             type="password"
             name="password"
+            class="w-full p-3 border border-gray-200 rounded-lg text-sm transition-colors focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             placeholder="设置密码"
             required
           />
         </div>
-        <!-- 你甚至可以在这里加个“确认密码”框，不过现在保持简单就好 -->
-        <button type="submit">立即注册</button>
+        
+        <button type="submit" class="w-full p-3 bg-primary text-white border-0 rounded-lg cursor-pointer mt-2.5 font-semibold text-[15px] transition-colors hover:bg-blue-700">立即注册</button>
       </form>
 
-      <div class="links">
-        <p style="margin: 0 0 10px 0">
-          已有账号？ <a href="/login">直接登录</a>
+      <div class="mt-5 text-center text-sm text-gray-500">
+        <p class="mb-2.5 m-0">
+          已有账号？ <a href="/login" class="text-primary no-underline font-medium hover:underline">直接登录</a>
         </p>
-        <a href="/" style="color: #9ca3af; font-size: 0.8rem">← 返回首页</a>
+        <a href="/" class="text-gray-400 text-xs no-underline hover:text-gray-600">← 返回首页</a>
       </div>
     </div>
   </body>
