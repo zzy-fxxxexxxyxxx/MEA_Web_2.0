@@ -167,10 +167,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   //------------------------------------Panel 1，3--------------------------------------------------------------------
   document.getElementById("plot1").addEventListener("click", () => {
-    plotWaveformsOnGrid(processedData); // processedData 是你 dataPreprocessing 的结果
+    // 1️⃣ 检查是否处于实时监控模式
+    const deviceInfoArea = document.getElementById("deviceInfoArea");
+    if (deviceInfoArea && !deviceInfoArea.classList.contains("hidden")) {
+        // showToastById("toast3", "⚠️ 实时监控中，参数自动更新，无需点击 Plot", 2000);
+        return;
+    }
+
+    // 2️⃣ 检查是否有静态数据
+    if (!processedData) {
+        showToastById("toast1", "❌ 请先上传文件", 2000);
+        return;
+    }
+
+    // 3️⃣ 执行静态绘图
+    plotWaveformsOnGrid(processedData); 
 
     if (document.getElementById("tab1").value != 0) {
-      originalPeakEnlargement(processedData); // processedData 是你前面 dataPreprocessing 的结果
+      originalPeakEnlargement(processedData); 
     }
   });
 
@@ -299,107 +313,74 @@ document.addEventListener("DOMContentLoaded", async () => {
   panels.forEach((panel, index) => {
     const expandBtn = panel.querySelector(`#expandPanel${index + 1}`);
     const icon = expandBtn.querySelector("i");
-    const contentWrapper = panel.querySelector("canvas, svg")?.parentElement; // 父容器
+    // Change selector to target the .panel-content div we just added
+    const contentWrapper = panel.querySelector(".panel-content"); 
+    // 存储原始高度类以便恢复
+    const originalHeightClass = index < 2 ? "h-[350px]" : "h-[300px]";
 
     expandBtn.addEventListener("click", () => {
       const isExpanded = panel.classList.contains("expanded");
 
       if (!isExpanded) {
         // 🌟 放大状态
+        // 隐藏其他面板
         panels.forEach((p) => {
           if (p !== panel) p.style.display = "none";
         });
-        panel.classList.add("expanded");
-        // Remove lg:grid-cols-2 to force single column
+        
+        // 面板本身设置为全高、flex列布局
+        panel.classList.add("expanded", "h-full", "flex", "flex-col");
+        
+        // 主网格设置为单列、全高
         mainGrid.classList.remove("lg:grid-cols-2");
-        mainGrid.classList.add("h-full"); // Make grid take full height if needed
+        mainGrid.classList.add("h-full", "grid-cols-1");
+        
+        // 图标切换
         icon.classList.replace("fa-expand", "fa-compress");
 
-        // 父容器高度适应 main
+        // 内容容器设置为 flex-1 min-h-0 (关键：自动填充剩余空间且允许内部滚动/适应)
         if (contentWrapper) {
-          // Remove fixed height class if present, let it grow
-          contentWrapper.classList.remove("h-[350px]");
-          contentWrapper.classList.add("h-full");
+          contentWrapper.classList.remove(originalHeightClass);
+          contentWrapper.classList.add("flex-1", "min-h-0", "h-auto");
+          contentWrapper.style.height = ""; // 清除可能存在的内联样式
+
+          // 关键修正：必须清除内部 Canvas/SVG 的固定尺寸，让 CSS 生效
+          const children = contentWrapper.querySelectorAll("canvas, svg");
+          children.forEach(el => {
+              el.style.width = "";
+              el.style.height = "";
+          });
         }
       } else {
         // 🔙 缩小状态
+        // 显示所有面板
         panels.forEach((p) => (p.style.display = "block"));
-        panel.classList.remove("expanded");
+        
+        // 移除面板扩展类
+        panel.classList.remove("expanded", "h-full", "flex", "flex-col");
+        
+        // 恢复网格布局
         mainGrid.classList.add("lg:grid-cols-2");
-        mainGrid.classList.remove("h-full");
+        mainGrid.classList.remove("h-full", "grid-cols-1");
+        
+        // 图标切换
         icon.classList.replace("fa-compress", "fa-expand");
 
-        // 恢复原高度
+        // 恢复内容容器高度
         if (contentWrapper) {
-          contentWrapper.classList.remove("h-full");
-          contentWrapper.classList.add("h-[350px]");
-          contentWrapper.style.height = ""; 
+          contentWrapper.classList.remove("flex-1", "min-h-0", "h-auto");
+          contentWrapper.classList.add(originalHeightClass);
+          // 清除可能存在的内联样式
+           contentWrapper.style.height = ""; 
+           
+           // 恢复 Canvas/SVG 的尺寸控制（可选，如果 CSS w-full h-full 足够强则不需要）
+           const children = contentWrapper.querySelectorAll("canvas, svg");
+           children.forEach(el => {
+               el.style.width = "";
+               el.style.height = "";
+           });
         }
-      }
-
-      // 根据 index 处理内容
-
-      // 重新绘制 canvas 或更新 SVG
-      switch (index) {
-        case 0:
-          // 实时波形放大时的重绘逻辑
-          const ctxLeft = document.getElementById("panel1Canvas");
-          const ctxRight = document.getElementById("panel1CanvasRight");
-
-          // 关键修正：由于 CSS 有 transition (300ms)，需要等待动画结束后再 resize
-          // 否则 Chart.js 会在动画开始时获取旧尺寸，导致重绘不正确
-          setTimeout(() => {
-            const existingLeft = Chart.getChart(ctxLeft);
-            const existingRight = Chart.getChart(ctxRight);
-
-            if (existingLeft) existingLeft.resize();
-            if (existingRight) existingRight.resize();
-          }, 350); // 稍大于 300ms 以确保布局稳定
-          break;
-        case 1:
-          // // SVG 调整宽高自适应
-          // requestAnimationFrame(() => requestAnimationFrame(drawGridOnPanel2));
-
-          // // 获取 heatmapLayer
-          // const heatmapLayer = document.querySelector(
-          //   "#panel2SVG #heatmapLayer"
-          // );
-          // // 判断 heatmapLayer 是否有实际尺寸
-          // if (
-          //   heatmapLayer &&
-          //   (heatmapLayer.getBBox().width > 0 ||
-          //     heatmapLayer.getBBox().height > 0)
-          // ) {
-          //   // 如果有尺寸，延迟执行 drawSmoothHeatmapTransparentCorners 保证布局完成
-          //   requestAnimationFrame(() =>
-          //     requestAnimationFrame(() =>
-          //       drawSmoothHeatmapTransparentCorners(HeatMapData, "color1")
-          //     )
-          //   );
-          // }
-
-          // // 获取 arrowsLayer
-          // const arrowsLayer = document.querySelector("#panel2SVG #arrowsLayer");
-          // // 判断 arrowsLayer 是否有实际尺寸
-          // if (
-          //   arrowsLayer &&
-          //   (arrowsLayer.getBBox().width > 0 ||
-          //     arrowsLayer.getBBox().height > 0)
-          // ) {
-          //   // 如果有尺寸，延迟执行 drawArrow 保证布局完成
-          //   requestAnimationFrame(() =>
-          //     requestAnimationFrame(() => drawArrow(HeatMapData, 2))
-          //   );
-          // }
-          break;
-        case 2:
-          // 当表达式 === 值1 时执行的代码
-          break;
-        case 3:
-          // 当表达式 === 值2 时执行的代码
-          break;
-        default:
-        // 如果都没有匹配，执行这里的代码
+        
       }
     });
   });

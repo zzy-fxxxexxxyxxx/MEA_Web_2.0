@@ -183,10 +183,10 @@ export function drawGridOnPanel2() {
     layoutLayer = document.createElementNS("http://www.w3.org/2000/svg", "g");
     layoutLayer.setAttribute("id", "layoutLayer");
     svg.appendChild(layoutLayer);
+  } else {
+    // 清空 layoutLayer
+    layoutLayer.innerHTML = "";
   }
-
-  // 清空 layoutLayer
-  layoutLayer.innerHTML = "";
 
   const rows = 8;
   const cols = 8;
@@ -195,27 +195,30 @@ export function drawGridOnPanel2() {
 
   // 获取父容器尺寸
   const rect = svg.parentElement.getBoundingClientRect();
-  if (!rect) return;
+  const width = rect.width;
+  const height = rect.height;
 
-  const svgWidth = rect.width * 0.7;
-  const svgHeight = rect.height * 0.9;
+  // 设置动态 viewBox 并清除内联尺寸，交给CSS
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.style.width = "";
+  svg.style.height = "";
 
-  // 设置动态 viewBox
-  svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
-  svg.style.width = svgWidth + "px";
-  svg.style.height = svgHeight + "px";
+  // 使用 90% 的区域绘制
+  const drawWidth = width * 0.9;
+  const drawHeight = height * 0.9;
+  
+  // 计算偏移量使内容居中
+  const offsetX = (width - drawWidth) / 2;
+  const offsetY = (height - drawHeight) / 2;
 
   // 计算每个电极单元格尺寸
-  const cellWidth = (svgWidth - (cols - 1) * gridGap) / cols;
-  const cellHeight = (svgHeight - (rows - 1) * gridGap) / rows;
+  const cellWidth = drawWidth / cols;
+  const cellHeight = drawHeight / rows;
 
-  // 计算阵列实际大小
-  const arrayWidth = cols * cellWidth + (cols - 1) * gridGap;
-  const arrayHeight = rows * cellHeight + (rows - 1) * gridGap;
+  // 补上 arrayWidth/arrayHeight 变量定义，防止下面 rect 代码报错
+  const arrayWidth = drawWidth;
+  const arrayHeight = drawHeight;
 
-  // 计算偏移量使阵列居中
-  const offsetX = (svgWidth - arrayWidth) / 2;
-  const offsetY = (svgHeight - arrayHeight) / 2;
 
   // ---------- 1) 绘制圆形电极 ----------
   const radius = Math.min(cellWidth, cellHeight) * 0.06;
@@ -311,12 +314,17 @@ export async function drawSmoothHeatmapTransparentCorners(
 
   // ---------- 计算 SVG 尺寸和 viewBox ----------
   const rect = svg.parentElement.getBoundingClientRect();
-  const svgWidth = rect.width * 0.7;
-  const svgHeight = rect.height * 0.9;
+  const width = rect.width;
+  const height = rect.height;
 
-  svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
-  svg.style.width = svgWidth + "px";
-  svg.style.height = svgHeight + "px";
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.style.width = "";
+  svg.style.height = "";
+
+  const drawWidth = width * 0.9;
+  const drawHeight = height * 0.9;
+  const offsetX = (width - drawWidth) / 2;
+  const offsetY = (height - drawHeight) / 2;
 
   const rows = data.length;
   const cols = data[0].length;
@@ -325,9 +333,9 @@ export async function drawSmoothHeatmapTransparentCorners(
   const dpi = window.devicePixelRatio || 1;
   const tmpCanvas = document.createElement("canvas");
 
-  // 将热力图尺寸设置为与 SVG 容器一致
-  tmpCanvas.width = Math.round(svgWidth * dpi);
-  tmpCanvas.height = Math.round(svgHeight * dpi);
+  // 将热力图尺寸设置为与绘制区域一致
+  tmpCanvas.width = Math.round(drawWidth * dpi);
+  tmpCanvas.height = Math.round(drawHeight * dpi);
   const ctx = tmpCanvas.getContext("2d");
 
   const customColors = chooseColor(colorPickValue);
@@ -443,18 +451,11 @@ export async function drawSmoothHeatmapTransparentCorners(
   img.setAttributeNS("http://www.w3.org/1999/xlink", "href", dataURL);
   img.setAttribute("href", dataURL);
 
-  // 将热力图居中：用偏移量计算
-  const imgWidth = cols; // 数据列数
-  const imgHeight = rows; // 数据行数
-  const scaleX = svgWidth / imgWidth;
-  const scaleY = svgHeight / imgHeight;
-  const offsetX = (svgWidth - imgWidth * scaleX) / 2;
-  const offsetY = (svgHeight - imgHeight * scaleY) / 2;
-
+  // 将热力图居中：直接使用计算好的偏移量和尺寸
   img.setAttribute("x", offsetX);
   img.setAttribute("y", offsetY);
-  img.setAttribute("width", imgWidth * scaleX);
-  img.setAttribute("height", imgHeight * scaleY);
+  img.setAttribute("width", drawWidth);
+  img.setAttribute("height", drawHeight);
   img.setAttribute("preserveAspectRatio", "none");
 
   heatmapLayer.appendChild(img);
@@ -602,15 +603,20 @@ export function drawArrow(matrix, Factor) {
 
   // ---------- 5️⃣ 设置动态 viewBox，使箭头居中 ----------
   const rect = svg.parentElement.getBoundingClientRect();
-  const svgWidth = rect.width * 0.7;
-  const svgHeight = rect.height * 0.9;
+  const width = rect.width;
+  const height = rect.height;
 
-  svg.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
-  svg.style.width = svgWidth + "px";
-  svg.style.height = svgHeight + "px";
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.style.width = "";
+  svg.style.height = "";
 
-  const offsetX = svgWidth / (cols + 1) / 2; // 居中偏移
-  const offsetY = svgHeight / (rows + 1) / 2;
+  const drawWidth = width * 0.9;
+  const drawHeight = height * 0.9;
+  const offsetX = (width - drawWidth) / 2;
+  const offsetY = (height - drawHeight) / 2;
+  
+  const cellWidth = drawWidth / cols;
+  const cellHeight = drawHeight / rows;
 
   // ---------- 6️⃣ 绘制箭头 ----------
   function drawArrowLine(x1, y1, x2, y2, color = "#808080") {
@@ -655,14 +661,11 @@ export function drawArrow(matrix, Factor) {
   }
 
   // ---------- 7️⃣ 映射网格到 SVG 坐标 ----------
-  const stepX = svgWidth / (cols + 1);
-  const stepY = svgHeight / (rows + 1);
-
   for (let i = 0; i < rows; i++)
     for (let j = 0; j < cols; j++) {
       if (isNaN(DX[i][j]) || isNaN(DY[i][j])) continue;
-      const x = stepX + j * stepX;
-      const y = stepY + i * stepY;
+      const x = offsetX + j * cellWidth + cellWidth / 2;
+      const y = offsetY + i * cellHeight + cellHeight / 2;
       drawArrowLine(x, y, x + DX[i][j], y + DY[i][j]);
     }
 }

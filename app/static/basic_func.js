@@ -40,15 +40,14 @@ export function drawAxes(canvasId, options = {}) {
   } = options;
   
   // 获取画布尺寸并设置DPI适配
-  const rect = canvas.parentElement.getBoundingClientRect();
-  if (!rect) return;
+  const width = canvas.parentElement.offsetWidth;
+  const height = canvas.parentElement.offsetHeight;
   
-  const width = rect.width;
-  const height = rect.height;
+  if (!width || !height) return;
   
-  // 设置CSS显示大小
-  canvas.style.width = width + "px";
-  canvas.style.height = height + "px";
+  // 移除可能存在的内联样式，交给CSS控制
+  canvas.style.width = "";
+  canvas.style.height = "";
   
   // 处理DPI
   const dpi = window.devicePixelRatio || 1;

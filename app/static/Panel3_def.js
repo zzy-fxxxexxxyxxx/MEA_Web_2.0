@@ -66,23 +66,28 @@ export function originalPeakEnlargement(processedData) {
 
   // 4️⃣ 绘制到 canvas
   const canvas = document.getElementById("canvas1");
-
-  const rect = canvas.parentElement.getBoundingClientRect();
-  if (!rect) return;
-
-  const width = rect.width;
-  const height = rect.height;
-  // CSS 显示大小
-  canvas.style.width = width + "px";
-  canvas.style.height = height + "px";
-
+  if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
+  // 使用 clientWidth/Height 或 parentElement offset
+  const width = canvas.parentElement.offsetWidth;
+  const height = canvas.parentElement.offsetHeight;
+
+  if (!width || !height) return;
+
   const dpi = window.devicePixelRatio || 1;
-  // const width = canvas.clientWidth;
-  // const height = canvas.clientHeight;
+
+  // 设置 Canvas 分辨率
   canvas.width = width * dpi;
   canvas.height = height * dpi;
+
+  // 移除内联样式，交给 CSS (w-full h-full)
+  canvas.style.width = "";
+  canvas.style.height = "";
+  
+  // 标记已有内容
+  canvas.dataset.hasContent = "true";
+
   ctx.setTransform(dpi, 0, 0, dpi, 0, 0);
 
   ctx.clearRect(0, 0, width, height);

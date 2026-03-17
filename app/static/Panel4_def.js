@@ -74,24 +74,31 @@ export async function plotAllSignals(processedData) {
 
   // 5️⃣ 绘制到 canvas
 
-  const canvas2 = document.getElementById("canvas2");
-  // 让 canvas2 大小和 canvas1 一样
-  const rect = canvas2.parentElement.getBoundingClientRect();
-  if (!rect) return;
+  const canvas = document.getElementById("canvas2");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
 
-  canvas2.style.width = rect.width + "px";
-  canvas2.style.height = rect.height + "px";
+  // 使用 clientWidth/Height 或 parentElement offset
+  const width = canvas.parentElement.offsetWidth;
+  const height = canvas.parentElement.offsetHeight;
+
+  if (!width || !height) return;
 
   const dpi = window.devicePixelRatio || 1;
-  canvas2.width = rect.width * dpi;
-  canvas2.height = rect.height * dpi;
 
-  const ctx = canvas2.getContext("2d");
+  // 设置 Canvas 分辨率
+  canvas.width = width * dpi;
+  canvas.height = height * dpi;
+
+  // 移除内联样式，交给 CSS (w-full h-full)
+  canvas.style.width = "";
+  canvas.style.height = "";
+  
+  // 标记已有内容
+  canvas.dataset.hasContent = "true";
+
   ctx.setTransform(dpi, 0, 0, dpi, 0, 0);
-  ctx.clearRect(0, 0, rect.width, rect.height);
-
-  const width = rect.width;
-  const height = rect.height;
+  ctx.clearRect(0, 0, width, height);
 
   // --- 留出边距给坐标轴 ---
   const marginLeft = 50;

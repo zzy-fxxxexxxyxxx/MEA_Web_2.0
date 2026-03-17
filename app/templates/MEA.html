@@ -706,12 +706,15 @@
             </div>
 
             <div
-              class="overflow-auto bg-gray-50 rounded-lg p-4 flex flex-row items-center justify-center h-[350px] w-full gap-2"
+              class="bg-gray-50 rounded-lg p-4 flex flex-row items-center justify-center h-[350px] w-full gap-2 relative panel-content"
               id="panel1CanvasContainer"
             >
-              <canvas id="panel1Canvas" data-has-content="false" class="flex-1 w-0 h-full !h-full"></canvas>
-              <!-- 新增：右侧 Canvas，默认隐藏 -->
-              <canvas id="panel1CanvasRight" class="hidden flex-1 w-0 h-full !h-full"></canvas>
+              <div class="flex-1 max-w-[50%] min-w-0 h-full relative wrapper-left">
+                  <canvas id="panel1Canvas" data-has-content="false" class="block w-full h-full"></canvas>
+              </div>
+              <div class="hidden flex-1 max-w-[50%] min-w-0 h-full relative wrapper-right" id="panel1CanvasRightWrapper">
+                  <canvas id="panel1CanvasRight" class="block w-full h-full"></canvas>
+              </div>
             </div>
           </div>
 
@@ -750,17 +753,10 @@
             </div>
 
             <div
-              class="overflow-auto bg-gray-50 rounded-lg flex items-center justify-center h-[350px]"
+              class="flex items-center justify-center h-[350px] overflow-hidden bg-gray-50 rounded-lg panel-content"
             >
               <!-- ✅ 保留原逻辑的 SVG -->
-              <svg id="panel2SVG" style="width: 90%; height: 90%">
-                <!-- 最底层：热力图 -->
-                <g id="heatmapLayer"></g>
-                <!-- 中间层：边框 + 电极 -->
-                <g id="layoutLayer"></g>
-                <!-- 最上层：箭头 -->
-                <g id="arrowsLayer"></g>
-              </svg>
+              <svg id="panel2SVG" class="w-full h-full block"></svg>
             </div>
           </div>
 
@@ -874,7 +870,7 @@
             </div>
 
             <!-- 图表容器：使用绝对定位防止布局塌陷 -->
-            <div class="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg p-4 relative overflow-auto">
+            <div class="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg p-4 relative overflow-hidden panel-content">
               <canvas
                 id="canvas1"
                 data-has-content="false"
@@ -917,10 +913,10 @@
               </div>
             </div>
             <div
-              class="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg p-4 relative overflow-auto"
+              class="flex items-center justify-center h-[300px] bg-gray-50 rounded-lg p-4 relative overflow-hidden panel-content"
             >
               <!-- ✅ 保留原逻辑的 canvas -->
-              <canvas id="canvas2" data-has-content="false"></canvas>
+              <canvas id="canvas2" data-has-content="false" class="block w-full h-full"></canvas>
             </div>
           </div>
         </div>

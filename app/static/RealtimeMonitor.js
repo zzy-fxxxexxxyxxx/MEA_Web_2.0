@@ -200,34 +200,36 @@ export function initRealtimeMonitor(
     // 1. Destroy old instances
     if (realtimeChartLeft) realtimeChartLeft.destroy();
     if (realtimeChartRight) realtimeChartRight.destroy();
-    
+
     // 同时也尝试用 Chart.js 静态方法销毁关联的 chart
     const existingLeft = Chart.getChart(ctxLeft);
     if (existingLeft) existingLeft.destroy();
-    
+
     if (ctxRight) {
-        const existingRight = Chart.getChart(ctxRight);
-        if (existingRight) existingRight.destroy();
+      const existingRight = Chart.getChart(ctxRight);
+      if (existingRight) existingRight.destroy();
     }
 
     // 2. Adjust Layout for 16 channels (8 Left + 8 Right)
-    // 假设我们总是启用双列模式，因为后端有 16 通道数据
-    if (ctxRight && ctxLeft) {
-       ctxRight.classList.remove('hidden', 'w-0');
-       // 使用 flex-1 让它们自动平分剩余空间，避免 w-1/2 导致的像素计算溢出
-       ctxRight.classList.add('flex-1', 'min-w-0'); 
-       ctxLeft.classList.remove('w-full');
-       ctxLeft.classList.add('flex-1', 'min-w-0');
+    const wrapperLeft = document.querySelector(".wrapper-left");
+    const wrapperRight = document.querySelector(".wrapper-right");
+
+    if (wrapperRight && wrapperLeft) {
+      wrapperRight.classList.remove("hidden");
+      wrapperRight.classList.add("flex-1");
+
+      wrapperLeft.classList.remove("w-full", "max-w-[100%]");
+      wrapperLeft.classList.add("flex-1", "max-w-[50%]"); // 显式限制宽度
     }
 
     // 3. Create Charts
     // Left: Ch1-Ch8 (offset 0)
     if (ctxLeft) {
-        realtimeChartLeft = createSubChart(ctxLeft, 0);
+      realtimeChartLeft = createSubChart(ctxLeft, 0);
     }
     // Right: Ch9-Ch16 (offset 8)
     if (ctxRight) {
-        realtimeChartRight = createSubChart(ctxRight, 8);
+      realtimeChartRight = createSubChart(ctxRight, 8);
     }
   }
 
@@ -280,13 +282,9 @@ export function initRealtimeMonitor(
             { value: currentRange },
           ];
         },
+        // 删除内建 Title，改用 Plugin 绘制，彻底解决旋转/重叠问题
         title: {
-          display: true,
-          text: `C${channelOffset + i + 1}`,
-          color: colors[i % colors.length],
-          font: { size: 18, weight: "bold", family: "Arial" }, // 减小字号，指定字体
-          padding: { top: 0, bottom: 0 },
-          align: "center",
+          display: false,
         },
         grid: {
           drawBorder: false,
@@ -300,6 +298,7 @@ export function initRealtimeMonitor(
           borderDash: (ctx) => (ctx.tick.value === 0 ? [4, 4] : []),
         },
         ticks: {
+          padding: 5,
           font: { size: 9 },
           color: "#86909C",
           autoSkip: false,
@@ -315,18 +314,78 @@ export function initRealtimeMonitor(
       };
     }
 
+    // const labelPlugin = {
+    //   id: 'channelLabels',
+    //   afterDraw: (chart) => {
+    //     const ctx = chart.ctx;
+    //     ctx.save();
+    //     ctx.font = "bold 13px Arial";
+    //     ctx.textAlign = "left";
+    //     ctx.textBaseline = "middle";
+
+    //     for (let i = 0; i < NUM_CHANNELS; i++) {
+    //         const yAxis = chart.scales[`y_ch${i}`];
+    //         if (!yAxis) continue;
+
+    //         // 计算垂直中心
+    //         const y = (yAxis.top + yAxis.bottom) / 2;
+
+    //         // 我们在左侧预留了 padding，这里将文字画在 padding 区域内
+    //         // x = 5 表示距离 Canvas 最左边 5px
+    //         ctx.fillStyle = colors[i % colors.length];
+    //         ctx.fillText(`C${channelOffset + i + 1}`, 5, y);
+    //     }
+    //     ctx.restore();
+    //   }
+    // };
+
+    const labelPlugin = {
+      id: "channelLabels",
+      afterDraw: (chart) => {
+        const ctx = chart.ctx;
+
+        for (let i = 0; i < NUM_CHANNELS; i++) {
+          const yAxis = chart.scales[`y_ch${i}`];
+          if (!yAxis) continue;
+
+          const y = (yAxis.top + yAxis.bottom) / 2; // 垂直中心
+          const x = 15; // 水平位置（距左边界）
+
+          ctx.save();
+          // 1. 将坐标系平移到 (x, y)
+          ctx.translate(x, y);
+          // 2. 旋转 90 度（逆时针）
+          ctx.rotate(Math.PI*3 / 2);
+          // 3. 设置文字样式
+          ctx.font = "bold 13px Arial";
+          ctx.textAlign = "center"; // 水平居中（相对于旋转后的 x 方向）
+          ctx.textBaseline = "middle"; // 垂直居中（相对于旋转后的 y 方向）
+          ctx.fillStyle = colors[i % colors.length];
+          // 4. 在 (0, 0) 处绘制文本（因为我们已经平移到了目标点）
+          ctx.fillText(`C${channelOffset + i + 1}`, 0, 0);
+          ctx.restore();
+        }
+      },
+    };
+
     return new Chart(ctx, {
       type: "line",
       data: { labels: [], datasets: datasets },
+      plugins: [labelPlugin], // 注册插件
       options: {
         responsive: true,
         // 关键点：禁用宽高比，让 Chart.js 填充整个 Canvas 容器
         maintainAspectRatio: false,
         // 显式指定 pixelRatio，防止 CSS 拉伸导致文字模糊/变形
         devicePixelRatio: window.devicePixelRatio || 1,
+        layout: {
+          padding: {
+            left: 20, // 预留左侧空间给 C1, C2 标签，防止重叠
+          },
+        },
         animation: false,
         interaction: { mode: "none", intersect: false },
-        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        plugins: { legend: { display: false }, tooltip: { enabled: false } }, // tooltip enabled: false is key
         scales: scales,
       },
     });
@@ -334,8 +393,8 @@ export function initRealtimeMonitor(
 
   // data update wrapper
   function updateRealtimeCharts(batchData) {
-      if (realtimeChartLeft) updateEachChart(realtimeChartLeft, batchData, 0);
-      if (realtimeChartRight) updateEachChart(realtimeChartRight, batchData, 8);
+    if (realtimeChartLeft) updateEachChart(realtimeChartLeft, batchData, 0);
+    if (realtimeChartRight) updateEachChart(realtimeChartRight, batchData, 8);
   }
 
   // actual update logic (replaces updateChartBatch)
