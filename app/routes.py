@@ -5,11 +5,18 @@ from app.models import User, Device, Notification # ✨ 记得导入模型
 import numpy as np
 import neurokit2 as nk
 import os
+import base64
+import requests
 from werkzeug.utils import secure_filename
 # 1. 在文件最顶部添加这些导入 (如果有了就不用加)
 import os
 from flask import request, jsonify, send_from_directory, current_app
 from app import socketio  # 确保能导入 socketio 实例
+
+# --- AI model local config ---
+AI_API_KEY = "sk-74c2c2ed7af840fb966722cc52a46956"
+AI_MODEL = "deepseek-v4-pro"
+AI_BASE_URL = "https://api.deepseek.com"
 
 
 # @app.route('/api/upload_report', methods=['POST'])该路由执行写入数据库的操作
@@ -26,6 +33,10 @@ if not os.path.exists(UPLOAD_FOLDER):
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+AI_ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
+def allowed_ai_image(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in AI_ALLOWED_EXTENSIONS
 
 # --- 页面路由 ---
 # 0. 首页路由 (最终版：使用模板 + Flash提示)
@@ -138,6 +149,79 @@ def upload_avatar():
 @app.route("/help_doc")
 def help_doc():
     return render_template("help.html")
+
+@app.route("/ai-assistant")
+@login_required
+def ai_assistant():
+    return render_template("ai_assistant.html")
+
+@app.route("/api/ai/chat", methods=["POST"])
+@login_required
+def ai_chat():
+    payload_in = request.get_json(silent=True) or {}
+    messages_in = payload_in.get("messages", [])
+    if not isinstance(messages_in, list) or len(messages_in) == 0:
+        return jsonify({"error": "messages is required"}), 400
+
+    chat_messages = []
+    for msg in messages_in:
+        if not isinstance(msg, dict):
+            continue
+        role = msg.get("role")
+        content = (msg.get("content") or "").strip()
+        if role in ("user", "assistant") and content:
+            chat_messages.append({"role": role, "content": content})
+
+    if not chat_messages or chat_messages[-1]["role"] != "user":
+        return jsonify({"error": "Last message must be a user message"}), 400
+
+    api_key = AI_API_KEY or os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        return jsonify({"error": "AI_API_KEY (or OPENAI_API_KEY) is not configured"}), 500
+
+    base_url = (AI_BASE_URL or os.environ.get("OPENAI_BASE_URL", "https://api.deepseek.com")).rstrip("/")
+    model = AI_MODEL or os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+
+    payload = {
+        "model": model,
+        "messages": chat_messages,
+    }
+
+    try:
+        resp = requests.post(
+            f"{base_url}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=90,
+        )
+        data = resp.json()
+    except requests.RequestException as e:
+        return jsonify({"error": f"Upstream request failed: {str(e)}"}), 502
+    except ValueError:
+        return jsonify({"error": "Invalid response from model service"}), 502
+
+    if resp.status_code >= 400:
+        message = data.get("error", {}).get("message", "Model request failed")
+        return jsonify({"error": message}), resp.status_code
+
+    output_text = None
+    choices = data.get("choices", [])
+    if choices:
+        message = choices[0].get("message", {})
+        message_content = message.get("content")
+        if isinstance(message_content, str):
+            output_text = message_content
+        elif isinstance(message_content, list):
+            parts = []
+            for item in message_content:
+                if item.get("type") == "text":
+                    parts.append(item.get("text", ""))
+            output_text = "\n".join([p for p in parts if p]).strip()
+
+    return jsonify({"output": output_text or "模型未返回文本结果。"})
 
 # 11. --- 原始信号处理功能 ---
 @app.route("/process_signal", methods=["POST"])
