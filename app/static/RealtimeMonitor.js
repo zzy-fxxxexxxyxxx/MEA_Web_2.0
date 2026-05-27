@@ -212,13 +212,13 @@ export function initRealtimeMonitor(
 
     // 2. Adjust Layout for 16 channels (8 Left + 8 Right)
     // 假设我们总是启用双列模式，因为后端有 16 通道数据
-    if (ctxRight && ctxLeft) {
-       ctxRight.classList.remove('hidden', 'w-0');
-       // 使用 flex-1 让它们自动平分剩余空间，避免 w-1/2 导致的像素计算溢出
-       ctxRight.classList.add('flex-1', 'min-w-0'); 
-       ctxLeft.classList.remove('w-full');
-       ctxLeft.classList.add('flex-1', 'min-w-0');
-    }
+    // if (ctxRight && ctxLeft) {
+    //    ctxRight.classList.remove('hidden', 'w-0');
+    //    // 使用 flex-1 让它们自动平分剩余空间，避免 w-1/2 导致的像素计算溢出
+    //    ctxRight.classList.add('flex-1', 'min-w-0'); 
+    //    ctxLeft.classList.remove('w-full');
+    //    ctxLeft.classList.add('flex-1', 'min-w-0');
+    // }
 
     // 3. Create Charts
     // Left: Ch1-Ch8 (offset 0)
@@ -226,9 +226,9 @@ export function initRealtimeMonitor(
         realtimeChartLeft = createSubChart(ctxLeft, 0);
     }
     // Right: Ch9-Ch16 (offset 8)
-    if (ctxRight) {
-        realtimeChartRight = createSubChart(ctxRight, 8);
-    }
+    // if (ctxRight) {
+    //     realtimeChartRight = createSubChart(ctxRight, 8);
+    // }
   }
 
   // 辅助函数：创建单个Chart实例
